@@ -86,8 +86,8 @@ async function puppetGetLinks(content) {
         await page2.click("#pnnext");
     }
 
-    console.log(totalAnnouncesLinks);
-    
+    console.log(`Links totales encontrados con anuncios: ${totalAnnouncesLinks}`);
+
     await browser.close();
     return Promise.resolve(totalAnnouncesLinks);
 }
@@ -123,6 +123,8 @@ async function puppetGetMails(array) {
                             })
                         }
                     })
+                } else {
+                    console.log(`No hay mails en la url ${array[i]}`)
                 }
 
                 // Guarda resultados en txt temporalmente
@@ -130,18 +132,19 @@ async function puppetGetMails(array) {
                     if (!arrayResultsToSave.includes(JSON.stringify(resultado))) {
                         arrayResultsToSave.push(JSON.stringify(resultado))
                     }
-                    
-                });
-                fs.writeFile('results.txt', arrayResultsToSave.toString(), function (err) {
-                    if (err) return console.log(err);
-                });
 
-                return Promise.resolve(finalMailsArray);
-
+                });
+                
             }).catch(function (err) {
-                console.warn('Something went wrong!!', err);
+                console.warn(`Something went wrong!! fetching ${array[i]}`, err);
             });
     };
+
+    fs.writeFile('results.txt', arrayResultsToSave.toString(), function (err) {
+        if (err) return console.log(err);
+    });
+    console.log(`Listado de mails encontrados en esas urls: ${finalMailsArray}`);
+    return Promise.resolve(finalMailsArray);
 }
 
 const puppetController = {
