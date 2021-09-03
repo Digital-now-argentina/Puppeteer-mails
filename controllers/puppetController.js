@@ -3,6 +3,8 @@ const puppeteer = require('puppeteer');
 var fetch = require('node-fetch');
 var innertext = require('innertext');
 
+var fs = require('fs');
+
 async function puppetGetLinks(content) {
 
     const browser = await puppeteer.launch();
@@ -29,29 +31,33 @@ async function puppetGetLinks(content) {
     // await page2.setDefaultNavigationTimeout();
     await page2.bringToFront();
 
-    await page2.waitForNavigation({
-        waitUntil: 'networkidle0',
+    await page2.screenshot({
+        path: 'screenshot.jpg'
     });
 
-    // var pageCaptcha = await page2.evaluate(() => {
-    //     var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
-    //     console.log(captcha);
-    //     if (captcha) {
-    //         console.log('HAY CAPTCHA!!!');
-    //         return true;
-    //     } else {
-    //         console.log('NO HAY CAPTCHA!!!');
-    //         return false;
-    //     }
-    // });
+    var isCaptchaPresent = false;
+    var pageCaptcha = await page2.evaluate(() => {
+        var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
+        console.log(captcha);
+        if (captcha) {
+            console.log('HAY CAPTCHA!!!');
+            isCaptchaPresent = true;
+            return true;
+        } else {
+            console.log('NO HAY CAPTCHA!!!');
+            isCaptchaPresent = false;
+            return false;
+        }
+    });
 
-    // // if (pageCaptcha === true) {
-    // //     console.log('CLICK EN CAPTCHA!!!');
-    // //     await page2.click(".recaptcha-checkbox-border");
-    // //     await page2.waitForNavigation({
-    // //         waitUntil: 'networkidle0',
-    // //     });
-    // // }
+    if (isCaptchaPresent) {
+        console.log('CLICK EN CAPTCHA!!!');
+        await page2.click(".recaptcha-checkbox-border");
+        await page2.waitForNavigation({
+            waitUntil: 'networkidle0',
+        });
+    }
+
     var limitPagination = parseInt(content.limitPage) + 1;
     var totalAnnouncesLinks = [];
     for (let i = 1; i < limitPagination; i++) {
@@ -81,9 +87,7 @@ async function puppetGetLinks(content) {
     }
 
     console.log(totalAnnouncesLinks);
-    // await page2.screenshot({
-    //     path: 'google.jpg'
-    // });
+    
     await browser.close();
     return Promise.resolve(totalAnnouncesLinks);
 }
@@ -92,6 +96,9 @@ async function puppetGetMails(array) {
 
     var foundMailsArray = [];
     var finalMailsArray = [];
+    var arrayResultsJS = [];
+    var arrayResultsToSave = [];
+
     for (let i = 0; i < array.length; i++) {
         var response;
         fetch(array[i])
@@ -103,12 +110,32 @@ async function puppetGetMails(array) {
 
                 if (foundMailsArray) {
                     foundMailsArray.forEach((mail) => {
-                        if (!finalMailsArray.includes(mail) && (!mail.split('.').includes('png') || !mail.split('.').includes('jpg') || !mail.split('.').includes('jpeg') || !mail.split('.').includes('wixpress'))) {
+                        mail = mail.toLowerCase();
+                        if (!finalMailsArray.includes(mail) && (!mail.split('.').includes('png') && !mail.split('.').includes('jpg') && !mail.split('.').includes('jpeg') && !mail.split('.').includes('wixpress') && !mail.split('@').includes('legal'))) {
                             finalMailsArray.push(mail)
-                            console.log(mail)
+                            arrayResultsJS.push({
+                                url: array[i],
+                                mail: mail
+                            })
+                            console.log({
+                                url: array[i],
+                                mail: mail
+                            })
                         }
                     })
                 }
+
+                // Guarda resultados en txt temporalmente
+                arrayResultsJS.forEach(resultado => {
+                    if (!arrayResultsToSave.includes(JSON.stringify(resultado))) {
+                        arrayResultsToSave.push(JSON.stringify(resultado))
+                    }
+                    
+                });
+                fs.writeFile('results.txt', arrayResultsToSave.toString(), function (err) {
+                    if (err) return console.log(err);
+                });
+
                 return Promise.resolve(finalMailsArray);
 
             }).catch(function (err) {
