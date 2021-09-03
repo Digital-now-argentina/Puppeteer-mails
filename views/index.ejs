@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>
+    <%= title %>
+  </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+  <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+
+<body>
+  <h1>
+    <%= title %>
+  </h1>
+  <p>Complete los campos:</p>
+
+  <form action="/links" method="POST">
+    <label for="country-target">
+      Selecciona un país:
+      <select class="country-target" id="country-target" name="countryTarget">
+        <option value="" default>-</option>
+        <option value="Argentina">Argentina</option>
+        <option value="Australia">Australia</option>
+        <option value="Bolivia">Bolivia</option>
+        <option value="Brazil">Brasil</option>
+        <option value="Chile">Chile</option>
+        <option value="Colombia">Colombia</option>
+        <option value="Costa Rica">Costa Rica</option>
+        <option value="Ecuador">Ecuador</option>
+        <option value="El Salvador">El Salvador</option>
+        <option value="Spain">España</option>
+        <option value="United States">Estados Unidos</option>
+        <option value="Philippines">Filipinas</option>
+        <option value="Guatemala">Guatemala</option>
+        <option value="Honduras">Honduras</option>
+        <option value="India">India</option>
+        <option value="United Kingdom">Inglaterra</option>
+        <option value="Mexico">México</option>
+        <option value="Nicaragua">Nicaragua</option>
+        <option value="Panama">Panamá</option>
+        <option value="Paraguay">Paraguay</option>
+        <option value="Peru">Perú</option>
+        <option value="Dominican Republic">Republica Dominicana</option>
+        <option value="South Africa">Sudafrica</option>
+        <option value="Ukraine">Ucrania</option>
+        <option value="Uruguay">Uruguay</option>
+        <option value="Venezuela">Venezuela</option>
+      </select>
+    </label>
+    <label for="limitPage">
+      Introduce cuantas páginas de resultados scrappear:
+      <input type="number" name="limitPage" id="limitPage">
+    </label>
+    <label for="search">Introduce un termino:
+      <input type="text" id="search" name="search">
+    </label>
+    <button type="submit">Buscar!</button>
+  </form>
+
+</body>
+
+</html>
