@@ -7,7 +7,13 @@ var fs = require('fs');
 
 async function puppetGetLinks(content) {
 
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        slowMo: 25,
+        defaultViewport: {
+            width: 1920,
+            height: 1080
+        }
+    });
     const page = await browser.newPage();
     await page.goto('http://isearchfrom.com');
     await page.type('#searchinput', `${content.search}`);
@@ -28,11 +34,11 @@ async function puppetGetLinks(content) {
     console.log(`Realizando busqueda en isearchfrom.com de "${content.search}", en lenguaje ${language}, en el país: ${content.countryTarget}`);
     await page.click("#searchbutton");
     const page2 = await newPagePromise;
-    // await page2.setDefaultNavigationTimeout();
+    await page2.setDefaultNavigationTimeout(0);
     await page2.bringToFront();
 
     await page2.screenshot({
-        path: 'screenshot.jpg'
+        path: './screenshots/captchaPresentOrNot.jpg'
     });
 
     var isCaptchaPresent = false;
@@ -53,9 +59,7 @@ async function puppetGetLinks(content) {
     if (isCaptchaPresent) {
         console.log('CLICK EN CAPTCHA!!!');
         await page2.click(".recaptcha-checkbox-border");
-        await page2.waitForNavigation({
-            waitUntil: 'networkidle0',
-        });
+
     }
 
     var limitPagination = parseInt(content.limitPage) + 1;
@@ -63,6 +67,9 @@ async function puppetGetLinks(content) {
     for (let i = 1; i < limitPagination; i++) {
         await page2.waitForNavigation({
             waitUntil: 'networkidle0',
+        });
+        await page2.screenshot({
+            path: `./screenshots/${content.search}--page${i}.jpg`
         });
         var pageAnnouncesLinks = await page2.evaluate(() => {
             var anuncios = document.querySelectorAll('.jpu5Q.NVWord.VqFMTc.p8AiDd');
@@ -86,7 +93,7 @@ async function puppetGetLinks(content) {
         await page2.click("#pnnext");
     }
 
-    console.log(`Links totales encontrados con anuncios: ${totalAnnouncesLinks}`);
+    console.log(`(${totalAnnouncesLinks.length}) Links totales encontrados con anuncios: ${totalAnnouncesLinks}`);
 
     await browser.close();
     return Promise.resolve(totalAnnouncesLinks);
@@ -111,7 +118,7 @@ async function puppetGetMails(array) {
                 if (foundMailsArray) {
                     foundMailsArray.forEach((mail) => {
                         mail = mail.toLowerCase();
-                        if (!finalMailsArray.includes(mail) && (!mail.split('.').includes('png') && !mail.split('.').includes('jpg') && !mail.split('.').includes('jpeg') && !mail.split('.').includes('wixpress') && !mail.split('@').includes('legal'))) {
+                        if (!finalMailsArray.includes(mail) && (!mail.split('.').includes('png') && !mail.split('.').includes('jpg') && !mail.split('.').includes('jpeg') && !mail.split('.').includes('wixpress') && !mail.split('@').includes('legal') && !mail.split('@').includes('sentry') && !mail.split('.').includes('sentry'))) {
                             finalMailsArray.push(mail)
                             arrayResultsJS.push({
                                 url: array[i],
@@ -134,16 +141,17 @@ async function puppetGetMails(array) {
                     }
 
                 });
-                
+
             }).catch(function (err) {
                 console.warn(`Something went wrong!! fetching ${array[i]}`, err);
             });
-    };
+
+    }
 
     fs.writeFile('results.txt', arrayResultsToSave.toString(), function (err) {
         if (err) return console.log(err);
     });
-    console.log(`Listado de mails encontrados en esas urls: ${finalMailsArray}`);
+    console.log(`(${finalMailsArray.length}) Listado de mails encontrados en esas urls: ${finalMailsArray}`);
     return Promise.resolve(finalMailsArray);
 }
 
