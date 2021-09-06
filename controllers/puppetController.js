@@ -34,7 +34,7 @@ async function puppetGetLinks(content) {
     console.log(`Realizando busqueda en isearchfrom.com de "${content.search}", en lenguaje ${language}, en el país: ${content.countryTarget}`);
     await page.click("#searchbutton");
     const page2 = await newPagePromise;
-    await page2.setDefaultNavigationTimeout(40000);
+    await page2.setDefaultNavigationTimeout(60000);
     await page2.bringToFront();
 
     await page2.screenshot({
@@ -69,8 +69,8 @@ async function puppetGetLinks(content) {
             waitUntil: 'networkidle0',
         });
         await page2.screenshot({
-            path: `./screenshots/${content.search}--page${i}.jpg`,
-            fullPage: true 
+            path: `./screenshots/lastrun--page${i}.jpg`,
+            fullPage: true
         });
         var pageAnnouncesLinks = await page2.evaluate(() => {
             var anuncios = document.querySelectorAll('.jpu5Q.NVWord.VqFMTc.p8AiDd');
@@ -119,7 +119,7 @@ async function puppetGetMails(array) {
                 if (foundMailsArray) {
                     foundMailsArray.forEach((mail) => {
                         mail = mail.toLowerCase();
-                        if (!finalMailsArray.includes(mail) && (!mail.split('.').includes('png') && !mail.split('.').includes('jpg') && !mail.split('.').includes('jpeg') && !mail.split('.').includes('wixpress') && !mail.split('@').includes('legal') && !mail.split('@').includes('sentry') && !mail.split('.').includes('sentry'))) {
+                        if (!finalMailsArray.includes(mail) && (!mail.split('.').includes('png') && !mail.split('.').includes('jpg') && !mail.split('.').includes('jpeg') && !mail.split('.').includes('wixpress') && !mail.split('@').includes('legal') && !mail.split('@').includes('sentry') && !mail.split('.').includes('sentry') && !mail.split('.').includes('vtex'))) {
                             finalMailsArray.push(mail)
                             arrayResultsJS.push({
                                 url: array[i],
@@ -147,13 +147,13 @@ async function puppetGetMails(array) {
                 console.warn(`Something went wrong!! fetching ${array[i]}`, err);
             });
 
-
-            fs.writeFile('results.txt', arrayResultsToSave.toString(), function (err) {
-                if (err) return console.log(err);
-            });
     }
 
-    
+    console.log('Deberia haber guardado results.txt');
+    fs.writeFile('results.txt', arrayResultsToSave.toString(), function (err) {
+        if (err) return console.log(err);
+    });
+
     console.log(`(${finalMailsArray.length}) Listado de mails encontrados en esas urls: ${finalMailsArray}`);
     return Promise.resolve(finalMailsArray);
 }
