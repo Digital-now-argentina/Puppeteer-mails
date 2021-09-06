@@ -41,26 +41,26 @@ async function puppetGetLinks(content) {
         path: './screenshots/captchaPresentOrNot.jpg'
     });
 
-    var isCaptchaPresent = false;
-    var pageCaptcha = await page2.evaluate(() => {
-        var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
-        console.log(captcha);
-        if (captcha) {
-            console.log('HAY CAPTCHA!!!');
-            isCaptchaPresent = true;
-            return true;
-        } else {
-            console.log('NO HAY CAPTCHA!!!');
-            isCaptchaPresent = false;
-            return false;
-        }
-    });
+    // var isCaptchaPresent = false;
+    // var pageCaptcha = await page2.evaluate(() => {
+    //     var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
+    //     console.log(captcha);
+    //     if (captcha) {
+    //         console.log('HAY CAPTCHA!!!');
+    //         isCaptchaPresent = true;
+    //         return true;
+    //     } else {
+    //         console.log('NO HAY CAPTCHA!!!');
+    //         isCaptchaPresent = false;
+    //         return false;
+    //     }
+    // });
 
-    if (isCaptchaPresent) {
-        console.log('CLICK EN CAPTCHA!!!');
-        await page2.click(".recaptcha-checkbox-border");
+    // if (isCaptchaPresent) {
+    //     console.log('CLICK EN CAPTCHA!!!');
+    //     await page2.click(".recaptcha-checkbox-border");
 
-    }
+    // }
 
     var limitPagination = parseInt(content.limitPage) + 1;
     var totalAnnouncesLinks = [];
@@ -106,50 +106,49 @@ async function puppetGetMails(array) {
     var finalMailsArray = [];
     var arrayResultsJS = [];
     var arrayResultsToSave = [];
-
-    for (let i = 0; i < array.length; i++) {
-        var response;
-        fetch(array[i])
-            .then(function (response) {
-                return response.text();
-            }).then(function (html) {
-                var textResponse = innertext(html);
-                foundMailsArray = textResponse.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi);
-
-                if (foundMailsArray) {
-                    foundMailsArray.forEach((mail) => {
-                        mail = mail.toLowerCase();
-                        if (!finalMailsArray.includes(mail) && (!mail.split('.').includes('png') && !mail.split('.').includes('jpg') && !mail.split('.').includes('jpeg') && !mail.split('.').includes('wixpress') && !mail.split('@').includes('legal') && !mail.split('@').includes('sentry') && !mail.split('.').includes('sentry') && !mail.split('.').includes('vtex'))) {
-                            finalMailsArray.push(mail)
-                            arrayResultsJS.push({
-                                url: array[i],
-                                mail: mail
-                            })
-                            console.log({
-                                url: array[i],
-                                mail: mail
-                            })
-                        }
-                    })
-                } else {
-                    console.log(`No hay mails en la url ${array[i]}`)
-                }
-
-                // Guarda resultados en txt temporalmente
-                arrayResultsJS.forEach(resultado => {
-                    if (!arrayResultsToSave.includes(JSON.stringify(resultado))) {
-                        arrayResultsToSave.push(JSON.stringify(resultado))
+    async function fetchUrl(url) {
+        try {
+            var response = await fetch(url);
+            var html = await response.text();
+            var textResponse = await innertext(html);
+            foundMailsArray = textResponse.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi);
+            if (foundMailsArray) {
+                foundMailsArray.forEach((mail) => {
+                    mail = mail.toLowerCase();
+                    if (!finalMailsArray.includes(mail) && (!mail.split('.').includes('png') && !mail.split('.').includes('jpg') && !mail.split('.').includes('jpeg') && !mail.split('.').includes('wixpress') && !mail.split('@').includes('legal') && !mail.split('@').includes('sentry') && !mail.split('.').includes('sentry') && !mail.split('.').includes('vtex'))) {
+                        finalMailsArray.push(mail)
+                        arrayResultsJS.push({
+                            url: url,
+                            mail: mail
+                        })
+                        console.log({
+                            url: url,
+                            mail: mail
+                        })
                     }
-
-                });
-
-            }).catch(function (err) {
-                console.warn(`Something went wrong!! fetching ${array[i]}`, err);
-            });
-
+                })
+            } else {
+                console.log(`No hay mails en la url ${url}`)
+            }
+        } catch (err) {
+            console.warn(`Something went wrong!! fetching ${url}`, err);
+        }
     }
 
-    console.log('Deberia haber guardado results.txt');
+
+    for await (let link of array) {
+        const mailsInUrl = await fetchUrl(link);
+    }
+
+
+    // Guarda resultados en txt temporalmente
+    arrayResultsJS.forEach(resultado => {
+        if (!arrayResultsToSave.includes(JSON.stringify(resultado))) {
+            arrayResultsToSave.push(JSON.stringify(resultado))
+        }
+
+    });
+    console.log('Deberia haber guardado resultados en results.txt');
     fs.writeFile('results.txt', arrayResultsToSave.toString(), function (err) {
         if (err) return console.log(err);
     });
