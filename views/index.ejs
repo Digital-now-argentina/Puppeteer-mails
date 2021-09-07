@@ -15,9 +15,10 @@
   </h1>
   <p>Complete los campos:</p>
 
-  <form action="/links" method="POST">
+  <form action="/links" method="POST" class="main-form">
     <label for="country-target">
       Selecciona un país:
+    </label>
       <select class="country-target" id="country-target" name="countryTarget">
         <option value="" default>-</option>
         <option value="Argentina">Argentina</option>
@@ -47,14 +48,17 @@
         <option value="Uruguay">Uruguay</option>
         <option value="Venezuela">Venezuela</option>
       </select>
-    </label>
+
     <label for="limitPage">
-      Introduce cuantas páginas de resultados scrappear:
+      Cantidad de páginas:
+    </label>
       <input type="number" name="limitPage" id="limitPage">
+    
+    <label for="search">
+      Introduce un termino:
     </label>
-    <label for="search">Introduce un termino:
       <input type="text" id="search" name="search">
-    </label>
+    
     <button type="submit">Buscar!</button>
   </form>
 

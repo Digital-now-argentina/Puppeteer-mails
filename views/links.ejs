@@ -13,7 +13,7 @@
   <h1>
     <%= title %>
   </h1>
-  <p>(<%= links.length %>) Enlaces encontrados con anuncios:</p>
+  <p>(<%= links.length %>) Enlaces encontrados con anuncios de "<%= search %>":</p>
   <ul>
     <% for (var i = 0; i < links.length ; i++) { %>
         <li><a href="<%= links[i] %>"><%= links[i] %></a></li>

@@ -111,11 +111,12 @@ async function puppetGetMails(array) {
             var response = await fetch(url);
             var html = await response.text();
             var textResponse = await innertext(html);
-            foundMailsArray = textResponse.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi);
+            foundMailsArray = textResponse.match(/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/gi);
+            //Anterior regex: (/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi)
             if (foundMailsArray) {
                 foundMailsArray.forEach((mail) => {
                     mail = mail.toLowerCase();
-                    if (!finalMailsArray.includes(mail) && (!mail.split('.').includes('png') && !mail.split('.').includes('jpg') && !mail.split('.').includes('jpeg') && !mail.split('.').includes('wixpress') && !mail.split('@').includes('legal') && !mail.split('@').includes('sentry') && !mail.split('.').includes('sentry') && !mail.split('.').includes('vtex'))) {
+                    if (!finalMailsArray.includes(mail) && (!mail.split('.').includes('png') && !mail.split('.').includes('jpg') && !mail.split('.').includes('jpeg') && !mail.split('.').includes('wixpress') && !mail.split('@').includes('legal') &&  !mail.split(/[.@]/).includes('sentry') && !mail.split('.').includes('vtex'))) {
                         finalMailsArray.push(mail)
                         arrayResultsJS.push({
                             url: url,
@@ -154,7 +155,7 @@ async function puppetGetMails(array) {
     });
 
     console.log(`(${finalMailsArray.length}) Listado de mails encontrados en esas urls: ${finalMailsArray}`);
-    return Promise.resolve(finalMailsArray);
+    return Promise.resolve(arrayResultsJS);
 }
 
 const puppetController = {
@@ -173,6 +174,7 @@ const puppetController = {
 
         res.render('links', {
             title: 'Tool Mail Scrapping - Links',
+            search: req.body.search,
             links: totalAnnouncesLinks
         })
 
