@@ -6,7 +6,9 @@ var innertext = require('innertext');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 var fs = require('fs');
-const { get } = require('http');
+const {
+    get
+} = require('http');
 
 async function puppetGetLinks(content) {
 
@@ -219,49 +221,74 @@ const puppetController = {
         try {
             console.log('Leyendo JSONBin.....');
             var rawResponse;
-            var content;
-                async function getJSONBin () {
-                    rawResponse = await fetch('https://api.jsonbin.io/v3/b/613789b4dfe0cf16eb56a89a/latest', {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                            'X-Master-Key': '$2b$10$Con2dje0wqb0I5A7SCsfcOVYnGg7KZKuLyka00bom1AQTwjWwOPAi'
-                        }
-                    });
-                    return rawResponse.json();
-                };
-                var content = await getJSONBin();
+            var contentJSONBin;
+            async function getJSONBin() {
+                rawResponse = await fetch('https://api.jsonbin.io/v3/b/6138de194a82881d6c4b4de5/latest', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': '$2b$10$Con2dje0wqb0I5A7SCsfcOVYnGg7KZKuLyka00bom1AQTwjWwOPAi'
+                    }
+                });
+                return rawResponse.json();
+            };
+            var contentJSONBin = await getJSONBin();
 
-                console.log(content.record)
-            const jsonToSave = JSON.stringify(newMailsSelected);
-            console.log(jsonToSave);
+            console.log(contentJSONBin.record)
+
+            let notRepeatedMails = [];
+            for (let i = 0; i < newMailsSelected.length; i++) {
+                if (!contentJSONBin.record.mails || (Array.isArray(contentJSONBin.record.mails) && !contentJSONBin.record.mails.some(mails => mails.mail === newMailsSelected[i].mail))) {
+                    notRepeatedMails.push(newMailsSelected[i]);
+                }
+            }
+            console.log('Los mails no repetidos a agregar sería:');
+            console.log(notRepeatedMails);
+
+            if (notRepeatedMails.length > 0) {
+                //Saving new results
+                try {
+                    var updatedMails = [...notRepeatedMails, ...contentJSONBin.record.mails];
+                    var readyUpdatedMails = updatedMails.sort((a, b) => (a.mail > b.mail) ? 1 : -1);
+                    console.log('Por actualizar! Así quedaria el listado en JSONBin:');
+                    console.log(readyUpdatedMails);
+                    var saveRawResponse;
+                    const jsonToSave = JSON.stringify({
+                        mails: [...readyUpdatedMails]
+                    });
+                    console.log(jsonToSave);
+
+                    async function postJSONBin() {
+                        console.log('Guardando data en JSONBin.....');
+                        saveRawResponse = await fetch('https://api.jsonbin.io/v3/b/6138de194a82881d6c4b4de5', {
+                            method: 'PUT',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'X-Bin-Versioning' : 'false',
+                                'X-Master-Key': '$2b$10$Con2dje0wqb0I5A7SCsfcOVYnGg7KZKuLyka00bom1AQTwjWwOPAi'
+                            },
+                            body: jsonToSave
+                        });
+                        return saveRawResponse;
+
+                    };
+                    var responsePost = await postJSONBin();
+
+                    console.log(responsePost);
+
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+
+
 
         } catch (error) {
             console.log(error)
         }
-        // //Saving new results
-        // try {
-        //     var saveRawResponse;
-        //     var saveResponse;
-        //     (async () => {
-        //         console.log('Guardando data en JSONBin.....');
-        //         saveRawResponse = await fetch('https://api.jsonbin.io/v3/b/613789b4dfe0cf16eb56a89a', {
-        //             method: 'POST',
-        //             headers: {
-        //                 'Accept': 'application/json',
-        //                 'Content-Type': 'application/json',
-        //                 "X-Master-Key": "$2b$10$Con2dje0wqb0I5A7SCsfcOVYnGg7KZKuLyka00bom1AQTwjWwOPAi"
-        //             },
-        //             body: jsonToSave
-        //         });
-        //         saveresponse = await saveRawResponse.json();
 
-        //         console.log(saveresponse);
-        //     })();
-        // } catch (error) {
-        //     console.log(error);
-        // }
 
         res.render('results', {
             title: 'Tool Mail Scrapping - Results'
