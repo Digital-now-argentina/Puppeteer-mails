@@ -6,6 +6,7 @@ var innertext = require('innertext');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 var fs = require('fs');
+const { get } = require('http');
 
 async function puppetGetLinks(content) {
 
@@ -43,26 +44,25 @@ async function puppetGetLinks(content) {
         path: './screenshots/captchaPresentOrNot.jpg'
     });
 
-    var isCaptchaPresent = false;
-    var pageCaptcha = await page2.evaluate(() => {
-        var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
-        console.log(captcha);
-        if (captcha) {
-            console.log('HAY CAPTCHA!!!');
-            isCaptchaPresent = true;
-            return true;
-        } else {
-            console.log('NO HAY CAPTCHA!!!');
-            isCaptchaPresent = false;
-            return false;
-        }
-    });
+    // var isCaptchaPresent = false;
+    // var pageCaptcha = await page2.evaluate(() => {
+    //     var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
+    //     console.log(captcha);
+    //     if (captcha) {
+    //         console.log('HAY CAPTCHA!!!');
+    //         isCaptchaPresent = true;
+    //         return true;
+    //     } else {
+    //         console.log('NO HAY CAPTCHA!!!');
+    //         isCaptchaPresent = false;
+    //         return false;
+    //     }
+    // });
 
-    if (isCaptchaPresent) {
-        console.log('CLICK EN CAPTCHA!!!');
-        await page2.click(".recaptcha-checkbox-border");
-
-    }
+    // if (isCaptchaPresent) {
+    //     console.log('CLICK EN CAPTCHA!!!');
+    //     await page2.click(".recaptcha-checkbox-border");
+    // }
 
     var limitPagination = parseInt(content.limitPage) + 1;
     var totalAnnouncesLinks = [];
@@ -203,8 +203,8 @@ const puppetController = {
         var country = req.body.country;
         var newMailsSelected = [];
 
-        for (let i=0; i < totalMails; i++) {
-         
+        for (let i = 0; i < totalMails; i++) {
+
             if (req.body[`save${i}`]) {
                 newMailsSelected.push({
                     url: req.body[`url${i}`],
@@ -220,48 +220,48 @@ const puppetController = {
             console.log('Leyendo JSONBin.....');
             var rawResponse;
             var content;
-            (async () => {
-                rawResponse = await fetch('https://api.jsonbin.io/v3/b/613789b4dfe0cf16eb56a89a/latest', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        "X-Master-Key": "$2b$10$Con2dje0wqb0I5A7SCsfcOVYnGg7KZKuLyka00bom1AQTwjWwOPAi"
-                    }
-                });
-                content = await rawResponse.json();
+                async function getJSONBin () {
+                    rawResponse = await fetch('https://api.jsonbin.io/v3/b/613789b4dfe0cf16eb56a89a/latest', {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-Master-Key': '$2b$10$Con2dje0wqb0I5A7SCsfcOVYnGg7KZKuLyka00bom1AQTwjWwOPAi'
+                        }
+                    });
+                    return rawResponse.json();
+                };
+                var content = await getJSONBin();
 
-                console.log(content.record);
-            })();
-
+                console.log(content.record)
             const jsonToSave = JSON.stringify(newMailsSelected);
             console.log(jsonToSave);
 
         } catch (error) {
             console.log(error)
         }
-        //Saving new results
-        try {
-            var saveRawResponse;
-            var saveResponse;
-            (async () => {
-                console.log('Guardando data en JSONBin.....');
-                saveRawResponse = await fetch('https://api.jsonbin.io/v3/b/613789b4dfe0cf16eb56a89a', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        "X-Master-Key": "$2b$10$Con2dje0wqb0I5A7SCsfcOVYnGg7KZKuLyka00bom1AQTwjWwOPAi"
-                    },
-                    body: jsonToSave
-                });
-                saveresponse = await saveRawResponse.json();
+        // //Saving new results
+        // try {
+        //     var saveRawResponse;
+        //     var saveResponse;
+        //     (async () => {
+        //         console.log('Guardando data en JSONBin.....');
+        //         saveRawResponse = await fetch('https://api.jsonbin.io/v3/b/613789b4dfe0cf16eb56a89a', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Accept': 'application/json',
+        //                 'Content-Type': 'application/json',
+        //                 "X-Master-Key": "$2b$10$Con2dje0wqb0I5A7SCsfcOVYnGg7KZKuLyka00bom1AQTwjWwOPAi"
+        //             },
+        //             body: jsonToSave
+        //         });
+        //         saveresponse = await saveRawResponse.json();
 
-                console.log(saveresponse);
-            })();
-        } catch (error) {
-            console.log(error);
-        }
+        //         console.log(saveresponse);
+        //     })();
+        // } catch (error) {
+        //     console.log(error);
+        // }
 
         res.render('results', {
             title: 'Tool Mail Scrapping - Results'
