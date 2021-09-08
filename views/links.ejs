@@ -13,7 +13,7 @@
   <h1>
     <%= title %>
   </h1>
-  <p>(<%= links.length %>) Enlaces encontrados con anuncios de "<%= search %>":</p>
+  <p>(<%= links.length %>) Enlaces encontrados con anuncios de "<%= search %>" en <%= country %>:</p>
   <ul>
     <% for (var i = 0; i < links.length ; i++) { %>
         <li><a href="<%= links[i] %>"><%= links[i] %></a></li>
@@ -24,6 +24,7 @@
   </form>
   <form action="/mails" method="POST">
     <input type="text" name="links" id="links" style="display: none !important" value="<%= links.join(',') %>">
+    <input type="text" name="country" id="country" style="display: none !important" value="<%= country %>">
     <button type="submit">Buscar Mails!</button>
   </form>
 

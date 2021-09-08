@@ -43,26 +43,26 @@ async function puppetGetLinks(content) {
         path: './screenshots/captchaPresentOrNot.jpg'
     });
 
-    // var isCaptchaPresent = false;
-    // var pageCaptcha = await page2.evaluate(() => {
-    //     var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
-    //     console.log(captcha);
-    //     if (captcha) {
-    //         console.log('HAY CAPTCHA!!!');
-    //         isCaptchaPresent = true;
-    //         return true;
-    //     } else {
-    //         console.log('NO HAY CAPTCHA!!!');
-    //         isCaptchaPresent = false;
-    //         return false;
-    //     }
-    // });
+    var isCaptchaPresent = false;
+    var pageCaptcha = await page2.evaluate(() => {
+        var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
+        console.log(captcha);
+        if (captcha) {
+            console.log('HAY CAPTCHA!!!');
+            isCaptchaPresent = true;
+            return true;
+        } else {
+            console.log('NO HAY CAPTCHA!!!');
+            isCaptchaPresent = false;
+            return false;
+        }
+    });
 
-    // if (isCaptchaPresent) {
-    //     console.log('CLICK EN CAPTCHA!!!');
-    //     await page2.click(".recaptcha-checkbox-border");
+    if (isCaptchaPresent) {
+        console.log('CLICK EN CAPTCHA!!!');
+        await page2.click(".recaptcha-checkbox-border");
 
-    // }
+    }
 
     var limitPagination = parseInt(content.limitPage) + 1;
     var totalAnnouncesLinks = [];
@@ -179,7 +179,8 @@ const puppetController = {
         res.render('links', {
             title: 'Tool Mail Scrapping - Links',
             search: req.body.search,
-            links: totalAnnouncesLinks
+            links: totalAnnouncesLinks,
+            country: req.body.countryTarget
         })
 
     },
@@ -193,17 +194,27 @@ const puppetController = {
         }
         res.render('mails', {
             title: 'Tool Mail Scrapping - Mails',
-            mails: totalMailsList
+            mails: totalMailsList,
+            country: req.body.country
         })
     },
     saveMails: async function (req, res, next) {
         var totalMails = req.body.mailcount;
-        console.log(totalMails);
+        var country = req.body.country;
+        var newMailsSelected = [];
+
         for (let i=0; i < totalMails; i++) {
-            console.log(req.body[`url${i}`]);
-            console.log(req.body[`mail${i}`]);
-            console.log(req.body[`save${i}`]);
+         
+            if (req.body[`save${i}`]) {
+                newMailsSelected.push({
+                    url: req.body[`url${i}`],
+                    mail: req.body[`mail${i}`],
+                    country: country
+                });
+            }
         }
+
+        console.log(newMailsSelected);
 
         try {
             console.log('Leyendo JSONBin.....');
@@ -223,8 +234,33 @@ const puppetController = {
                 console.log(content.record);
             })();
 
+            const jsonToSave = JSON.stringify(newMailsSelected);
+            console.log(jsonToSave);
+
         } catch (error) {
             console.log(error)
+        }
+        //Saving new results
+        try {
+            var saveRawResponse;
+            var saveResponse;
+            (async () => {
+                console.log('Guardando data en JSONBin.....');
+                saveRawResponse = await fetch('https://api.jsonbin.io/v3/b/613789b4dfe0cf16eb56a89a', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        "X-Master-Key": "$2b$10$Con2dje0wqb0I5A7SCsfcOVYnGg7KZKuLyka00bom1AQTwjWwOPAi"
+                    },
+                    body: jsonToSave
+                });
+                saveresponse = await saveRawResponse.json();
+
+                console.log(saveresponse);
+            })();
+        } catch (error) {
+            console.log(error);
         }
 
         res.render('results', {
