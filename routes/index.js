@@ -8,6 +8,8 @@ router.get('/', puppetController.index);
 
 router.post('/links', puppetController.getLinks);
 
-router.post('/mails', puppetController.getMails)
+router.post('/mails', puppetController.getMails);
+
+router.post('/save', puppetController.saveMails)
 
 module.exports = router;

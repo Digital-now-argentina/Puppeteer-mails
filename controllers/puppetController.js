@@ -3,6 +3,8 @@ const puppeteer = require('puppeteer');
 var fetch = require('node-fetch');
 var innertext = require('innertext');
 
+var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+
 var fs = require('fs');
 
 async function puppetGetLinks(content) {
@@ -116,7 +118,7 @@ async function puppetGetMails(array) {
             if (foundMailsArray) {
                 foundMailsArray.forEach((mail) => {
                     mail = mail.toLowerCase();
-                    if (!finalMailsArray.includes(mail) && (!mail.split('.').includes('png') && !mail.split('.').includes('jpg') && !mail.split('.').includes('jpeg') && !mail.split('.').includes('wixpress') && !mail.split('@').includes('legal') &&  !mail.split(/[.@]/).includes('sentry') && !mail.split('.').includes('vtex'))) {
+                    if (!finalMailsArray.includes(mail) && (!mail.split('.').includes('png') && !mail.split('.').includes('jpg') && !mail.split('.').includes('jpeg') && !mail.split('.').includes('wixpress') && !mail.split('@').includes('legal') && !mail.split(/[.@]/).includes('sentry') && !mail.split('.').includes('vtex') && !mail.includes('u003e'))) {
                         finalMailsArray.push(mail)
                         arrayResultsJS.push({
                             url: url,
@@ -155,6 +157,8 @@ async function puppetGetMails(array) {
     });
 
     console.log(`(${finalMailsArray.length}) Listado de mails encontrados en esas urls: ${finalMailsArray}`);
+
+
     return Promise.resolve(arrayResultsJS);
 }
 
@@ -190,6 +194,41 @@ const puppetController = {
         res.render('mails', {
             title: 'Tool Mail Scrapping - Mails',
             mails: totalMailsList
+        })
+    },
+    saveMails: async function (req, res, next) {
+        var totalMails = req.body.mailcount;
+        console.log(totalMails);
+        for (let i=0; i < totalMails; i++) {
+            console.log(req.body[`url${i}`]);
+            console.log(req.body[`mail${i}`]);
+            console.log(req.body[`save${i}`]);
+        }
+
+        try {
+            console.log('Leyendo JSONBin.....');
+            var rawResponse;
+            var content;
+            (async () => {
+                rawResponse = await fetch('https://api.jsonbin.io/v3/b/613789b4dfe0cf16eb56a89a/latest', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        "X-Master-Key": "$2b$10$Con2dje0wqb0I5A7SCsfcOVYnGg7KZKuLyka00bom1AQTwjWwOPAi"
+                    }
+                });
+                content = await rawResponse.json();
+
+                console.log(content.record);
+            })();
+
+        } catch (error) {
+            console.log(error)
+        }
+
+        res.render('results', {
+            title: 'Tool Mail Scrapping - Results'
         })
     }
 }

@@ -14,21 +14,39 @@
     <%= title %>
   </h1>
   <p>(<%= mails.length %>) Emails obtenidos:</p>
-  <table>
-    <tr>
-      <th>URL</th>
-      <th>MAIL</th>
-    </tr>
-    <% for (var i=0; i < mails.length ; i++) { %>
+  <form action="/save" method="POST">
+
+
+    <table>
       <tr>
-        <td>
-          <a href="<%= mails[i].url %>"><%= mails[i].url %></a></td>
-        <td>
-          <p><%= mails[i].mail %></p>
-        </td>
+        <th>URL</th>
+        <th>MAIL</th>
+        <th>Guardar</th>
       </tr>
-      <% } %>
-  </table>
+      <input type="number" name="mailcount" style="display: none;" value="<%= mails.length %>"> 
+      
+      <% for (var i=0; i < mails.length ; i++) { %>
+        <tr>
+          <td>
+            <a href="<%= mails[i].url %>">
+              <%= mails[i].url %>
+            </a>
+          </td>
+          <td>
+            <p>
+              <%= mails[i].mail %>
+            </p>
+          </td>
+          <td>
+            <input type="text" name="mail<%= i %>" style="display: none;" value="<%= mails[i].mail %>">
+            <input type="text" name="url<%= i %>" style="display: none;" value="<%= mails[i].url %>">
+            <input type="checkbox" name="save<%= i %>" id="save<%= i %>" checked="true">
+          </td>
+        </tr>
+        <% } %>
+    </table>
+    <button type="submit">Guardar Mails en JSONBin</button>
+  </form>
   <form action="/" method="GET">
     <button type="submit">Volver a Inicio</button>
   </form>
