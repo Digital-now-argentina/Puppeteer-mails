@@ -47,25 +47,25 @@ async function puppetGetLinks(content) {
         path: './screenshots/captchaPresentOrNot.jpg'
     });
 
-    var isCaptchaPresent = false;
-    var pageCaptcha = await page2.evaluate(() => {
-        var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
-        console.log(captcha);
-        if (captcha) {
-            console.log('HAY CAPTCHA!!!');
-            isCaptchaPresent = true;
-            return true;
-        } else {
-            console.log('NO HAY CAPTCHA!!!');
-            isCaptchaPresent = false;
-            return false;
-        }
-    });
+    // var isCaptchaPresent = false;
+    // var pageCaptcha = await page2.evaluate(() => {
+    //     var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
+    //     console.log(captcha);
+    //     if (captcha) {
+    //         console.log('HAY CAPTCHA!!!');
+    //         isCaptchaPresent = true;
+    //         return true;
+    //     } else {
+    //         console.log('NO HAY CAPTCHA!!!');
+    //         isCaptchaPresent = false;
+    //         return false;
+    //     }
+    // });
 
-    if (isCaptchaPresent) {
-        console.log('CLICK EN CAPTCHA!!!');
-        await page2.click(".recaptcha-checkbox-border");
-    }
+    // if (isCaptchaPresent) {
+    //     console.log('CLICK EN CAPTCHA!!!');
+    //     await page2.click(".recaptcha-checkbox-border");
+    // }
 
     var limitPagination = parseInt(content.limitPage) + 1;
     var totalAnnouncesLinks = [];
