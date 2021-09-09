@@ -15,34 +15,80 @@
     </h1>
     <p>Resultados actualizados de JSONBin:</p>
 
+    
+    
+
     <table>
         <caption>(<%= jsonbin.length %>) Listado total de Mails en JSONBin:</caption>
         <tr>
+            <th>PAÍS
+                <button class="sort-button" onclick="sortLocationAscending()">A-Z</button>
+                <button class="sort-button" onclick="sortLocationDescending()">Z-A</button>
+            </th>
             <th>URL</th>
-            <th>MAIL</th>
+            <th>MAIL
+                <button class="sort-button" onclick="sortMailAscending()">A-Z</button>
+                <button class="sort-button" onclick="sortMailDescending()">Z-A</button>
+            </th>
         </tr>
-        <% for (var i=0; i < jsonbin.length ; i++) { %>
-            <tr>
-              <td>
-                <a href="<%= jsonbin[i].url %>">
-                  <%= jsonbin[i].url %>
-                </a>
-              </td>
-              <td>
-                <p>
-                  <%= jsonbin[i].mail %>
-                </p>
-              </td>
-            </tr>
-            <% } %>
+        <tbody id="tableData">
+            <% if (jsonbin.length>= 1) { %>
+                <% for (var i=0; i < jsonbin.length ; i++) { %>
+                    <tr>
+                        <td>
+                            <p>
+                                <%= jsonbin[i].country %>
+                            </p>
+                        </td>
+                        <td>
+                            <a href="<%= jsonbin[i].url %>">
+                                <%= jsonbin[i].url %>
+                            </a>
+                        </td>
+                        <td>
+                            <p>
+                                <%= jsonbin[i].mail %>
+                            </p>
+                        </td>
+                    </tr>
+                    <% } } else { %>
+                        <tr>No hay datos</tr>
+                        <% } %>
+        </tbody>
     </table>
 
     <form action="/" method="GET">
         <button type="submit">Volver a Inicio</button>
     </form>
 
-   
+
 
 </body>
+<script defer>
+    const tbody = document.getElementById("tableData");
+
+    // Helper function for sorting on a given column, with a given comparator
+    function tableSort(colNum, cmp) {
+        let rows = [...tbody.rows];
+        rows.sort((a, b) => cmp(a.cells[colNum].textContent, b.cells[colNum].textContent))
+            .map(row => tbody.appendChild(row));
+    }
+
+    function sortMailAscending() {
+        tableSort(2, (a, b) => a.localeCompare(b));
+    }
+
+    function sortMailDescending() {
+        tableSort(2, (a, b) => b.localeCompare(a));
+    }
+
+    function sortLocationAscending() {
+        tableSort(0, (a, b) => a.localeCompare(b));
+    }
+
+    function sortLocationDescending() {
+        tableSort(0, (a, b) => b.localeCompare(a));
+    }
+</script>
 
 </html>

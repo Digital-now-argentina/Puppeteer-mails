@@ -15,62 +15,65 @@
     </h1>
     <p>Resultados obtenidos:</p>
 
-    <% if (addedmails.length >= 1) { %>
-    <table>
-        <caption>(<%= addedmails.length %>) Se agregaron los siguientes mails a JSONBin (no repetidos):</caption>
-        <tr>
-            <th>URL</th>
-            <th>MAIL</th>
-        </tr>
-        <% for (var i=0; i < addedmails.length ; i++) { %>
+    <% if (addedmails.length>= 1) { %>
+        <table>
+            <caption>(<%= addedmails.length %>) Se agregaron los siguientes mails a JSONBin (no repetidos):</caption>
             <tr>
-              <td>
-                <a href="<%= addedmails[i].url %>">
-                  <%= addedmails[i].url %>
-                </a>
-              </td>
-              <td>
-                <p>
-                  <%= addedmails[i].mail %>
-                </p>
-              </td>
+                <th>URL</th>
+                <th>MAIL</th>
             </tr>
+            <% for (var i=0; i < addedmails.length ; i++) { %>
+                <tr>
+                    <td>
+                        <a href="<%= addedmails[i].url %>">
+                            <%= addedmails[i].url %>
+                        </a>
+                    </td>
+                    <td>
+                        <p>
+                            <%= addedmails[i].mail %>
+                        </p>
+                    </td>
+                </tr>
+                <% } %>
+        </table>
+        <% } else { %>
+            <p>NO se agregaron mails al listado total</p>
             <% } %>
-    </table>
-    <% } else { %>
-    <p>NO se agregaron mails al listado total</p>
-    <% } %> 
-    <table>
-        <caption>(<%= jsonbin.length %>) Listado total de Mails en JSONBin:</caption>
-        <tr>
-            <th>URL</th>
-            <th>MAIL</th>
-        </tr>
-        <% for (var i=0; i < jsonbin.length ; i++) { %>
-            <tr>
-              <td>
-                <a href="<%= jsonbin[i].url %>">
-                  <%= jsonbin[i].url %>
-                </a>
-              </td>
-              <td>
-                <p>
-                  <%= jsonbin[i].mail %>
-                </p>
-              </td>
-            </tr>
-            <% } %>
-    </table>
+                <table>
+                    <caption>(<%= jsonbin.length %>) Listado total de Mails en JSONBin:</caption>
+                    <tr>
+                        <th>URL</th>
+                        <th>MAIL</th>
+                    </tr>
+                    <% if (jsonbin.length >= 1) { %>
+                        <% for (var i=0; i < jsonbin.length ; i++) { %>
+                            <tr>
+                                <td>
+                                    <a href="<%= jsonbin[i].url %>">
+                                        <%= jsonbin[i].url %>
+                                    </a>
+                                </td>
+                                <td>
+                                    <p>
+                                        <%= jsonbin[i].mail %>
+                                    </p>
+                                </td>
+                            </tr>
+                            <% } } else { %>
+                                <tr>No hay datos</tr>
+                                <% } %>
+                </table>
 
-    <form action="/consult" method="GET">
-        <button type="submit">Consultar JSONBin</button>
-    </form>
+                <form action="/consult" method="GET">
+                    <button type="submit">Consultar JSONBin</button>
+                </form>
 
-    <form action="/" method="GET">
-        <button type="submit">Volver a Inicio</button>
-    </form>
+                <form action="/" method="GET">
+                    <button type="submit">Volver a Inicio</button>
+                </form>
 
-   
+
 
 </body>
 
