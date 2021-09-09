@@ -10,6 +10,8 @@ router.post('/links', puppetController.getLinks);
 
 router.post('/mails', puppetController.getMails);
 
-router.post('/save', puppetController.saveMails)
+router.post('/save', puppetController.saveMails);
+
+router.get('/consult', puppetController.consultBin);
 
 module.exports = router;

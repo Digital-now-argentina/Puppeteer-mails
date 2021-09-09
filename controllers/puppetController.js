@@ -237,7 +237,7 @@ const puppetController = {
 
             console.log(contentJSONBin.record)
 
-            let notRepeatedMails = [];
+            var notRepeatedMails = [];
             for (let i = 0; i < newMailsSelected.length; i++) {
                 if (!contentJSONBin.record.mails || (Array.isArray(contentJSONBin.record.mails) && !contentJSONBin.record.mails.some(mails => mails.mail === newMailsSelected[i].mail))) {
                     notRepeatedMails.push(newMailsSelected[i]);
@@ -291,7 +291,38 @@ const puppetController = {
 
 
         res.render('results', {
-            title: 'Tool Mail Scrapping - Results'
+            title: 'Tool Mail Scrapping - Results',
+            jsonbin: contentJSONBin.record.mails,
+            addedmails: notRepeatedMails
+        })
+    },
+    consultBin: async function (req, res, next) {
+        try {
+            console.log('Leyendo JSONBin.....');
+            var rawResponse;
+            var contentJSONBin;
+            async function getJSONBin() {
+                rawResponse = await fetch('https://api.jsonbin.io/v3/b/6138de194a82881d6c4b4de5/latest', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': '$2b$10$Con2dje0wqb0I5A7SCsfcOVYnGg7KZKuLyka00bom1AQTwjWwOPAi'
+                    }
+                });
+                return rawResponse.json();
+            };
+            var contentJSONBin = await getJSONBin();
+
+            console.log(contentJSONBin.record)
+
+        } catch (error) {
+            console.log(error)
+        }
+
+        res.render('consult', {
+            title: 'Tool Mail Scrapping - Consult',
+            jsonbin: contentJSONBin.record.mails
         })
     }
 }
