@@ -2,14 +2,10 @@ const puppeteer = require('puppeteer');
 
 var fetch = require('node-fetch');
 var innertext = require('innertext');
-
-var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-
 var fs = require('fs');
-const {
-    get
-} = require('http');
-const { response } = require('express');
+
+var ProxyLists = require('proxy-lists');
+
 
 async function puppetGetLinks(content) {
 
@@ -173,6 +169,7 @@ const puppetController = {
     },
     getLinks: async function (req, res, next) {
         let totalAnnouncesLinks;
+
         try {
             totalAnnouncesLinks = await puppetGetLinks(req.body);
         } catch (error) {
@@ -267,7 +264,7 @@ const puppetController = {
                             headers: {
                                 'Accept': 'application/json',
                                 'Content-Type': 'application/json',
-                                'X-Bin-Versioning' : 'false',
+                                'X-Bin-Versioning': 'false',
                                 'X-Master-Key': '$2b$10$Con2dje0wqb0I5A7SCsfcOVYnGg7KZKuLyka00bom1AQTwjWwOPAi'
                             },
                             body: jsonToSave
@@ -325,6 +322,64 @@ const puppetController = {
             title: 'Tool Mail Scrapping - Consult',
             jsonbin: contentJSONBin.record.mails
         })
+    },
+    testProxy: async function (req, res, next) {
+        let countryNames = ['Argentina', 'Australia', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Costa Rica', 'Ecuador', 'El Salvador', 'Spain', 'United States', 'Philippines', 'Guatemala', 'Honduras', 'India', 'United Kingdom', 'Mexico', 'Nicaragua', 'Panama', 'Paraguay', 'Peru', 'Dominican Republic', 'South Africa', 'Ukraine', 'Uruguay', 'Venezuela'];
+        let countryCodes = ['ar', 'au', 'bo', 'br', 'cl', 'co', 'cr', 'ec', 'sv', 'es', 'us', 'ph', 'gt', 'hn', 'in', 'uk', 'mx', 'ni', 'pa', 'py', 'pe', 'do', 'za', 'ua', 'uy', 've'];
+        console.log(countryCodes[countryNames.indexOf(req.body.countryTarget)]);
+        var proxyList = [];
+        try {
+
+            // var options = {
+            //     countries: [countryCodes[countryNames.indexOf(req.body.countryTarget)]]
+            // };
+
+            // // `gettingProxies` is an event emitter object.
+            // var gettingProxies = ProxyLists.getProxies(options);
+
+            // gettingProxies.on('data', function(proxies) {
+            //     proxies.forEach(proxy => {
+            //         proxyList.push(proxy)
+            //     })
+            // });
+
+            // gettingProxies.on('error', function(error) {
+            //     // Some error has occurred.
+            //     // console.error(error);
+            // });
+
+            // gettingProxies.once('end', function() {
+            //     console.log('TERMINO DE OBTENER PROXYS DE ' + req.body.countryTarget);
+            //     console.log(proxyList);
+            // });
+
+
+            console.log('Testing proxy setup....');
+            const browser = await puppeteer.launch({
+                headless: false,
+                args: [
+                    // '--proxy-server=186.149.2.183:5678',
+                    '--no-sandbox',
+                    // '--headless',
+                    '--disable-gpu',
+                    '--window-size=1920x1080'
+                ]
+            });
+            const page = await browser.newPage();
+            // await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
+
+            await page.goto('http://www.google.com');
+            await page.setDefaultNavigationTimeout(80000);
+
+            await page.screenshot({
+                path: './screenshots/testProxy.jpg'
+            });
+            await browser.close();
+
+        } catch (error) {
+            console.log(error)
+        }
+
     }
 }
 

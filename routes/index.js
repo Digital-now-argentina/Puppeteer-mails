@@ -12,6 +12,10 @@ router.post('/mails', puppetController.getMails);
 
 router.post('/save', puppetController.saveMails);
 
+router.post('/proxytest', puppetController.testProxy);
+
 router.get('/consult', puppetController.consultBin);
+
+
 
 module.exports = router;
