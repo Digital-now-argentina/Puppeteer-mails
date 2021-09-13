@@ -341,6 +341,7 @@ const puppetController = {
             //     proxies.forEach(proxy => {
             //         proxyList.push(proxy)
             //     })
+            //     console.log(proxies)
             // });
 
             // gettingProxies.on('error', function(error) {
@@ -350,7 +351,9 @@ const puppetController = {
 
             // gettingProxies.once('end', function() {
             //     console.log('TERMINO DE OBTENER PROXYS DE ' + req.body.countryTarget);
-            //     console.log(proxyList);
+            //     proxyList.forEach(proxy => {
+            //         console.log(`${proxy.ipAddress}:${proxy.port}`)
+            //     })
             // });
 
 
@@ -358,7 +361,7 @@ const puppetController = {
             const browser = await puppeteer.launch({
                 headless: false,
                 args: [
-                    // '--proxy-server=186.149.2.183:5678',
+                    '--proxy-server=182.52.83.36:8080',
                     '--no-sandbox',
                     // '--headless',
                     '--disable-gpu',
@@ -368,7 +371,7 @@ const puppetController = {
             const page = await browser.newPage();
             // await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
 
-            await page.goto('http://www.google.com');
+            await page.goto('https://whatsmyip.com');
             await page.setDefaultNavigationTimeout(80000);
 
             await page.screenshot({
