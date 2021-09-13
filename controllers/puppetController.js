@@ -361,7 +361,7 @@ const puppetController = {
             const browser = await puppeteer.launch({
                 headless: false,
                 args: [
-                    '--proxy-server=182.52.83.36:8080',
+                    // '--proxy-server=182.52.83.36:8080',
                     '--no-sandbox',
                     // '--headless',
                     '--disable-gpu',
@@ -370,9 +370,9 @@ const puppetController = {
             });
             const page = await browser.newPage();
             // await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
-
-            await page.goto('https://whatsmyip.com');
             await page.setDefaultNavigationTimeout(80000);
+            await page.goto(`http://api.scraperapi.com/?api_key=b0090e5f12135e1823a0fba4f12078f9&url=https://whatsmyip.com&country_code=${countryCodes[countryNames.indexOf(req.body.countryTarget)]}`);
+            
 
             await page.screenshot({
                 path: './screenshots/testProxy.jpg'
