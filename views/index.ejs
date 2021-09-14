@@ -64,7 +64,10 @@
   <form action="/consult" method="GET">
     <button type="submit">Consultar JSONBin</button>
   </form>
-  <form action="/proxytest" method="POST">
+  <form action="/proxytest" method="GET">
+    <button type="submit">Test Proxy</button>
+  </form>
+  <form action="/proxyget" method="POST" style="padding-top: 20px; border: 1px solid gray; width: 35%; margin-left: auto; margin-right: auto;">
     <select class="country-target" id="country-target" name="countryTarget">
       <option value="" default>-</option>
       <option value="Argentina">Argentina</option>
@@ -94,7 +97,7 @@
       <option value="Uruguay">Uruguay</option>
       <option value="Venezuela">Venezuela</option>
     </select>
-    <button type="submit">Test Proxy</button>
+    <button type="submit">Get Proxies</button>
   </form>
 </body>
 

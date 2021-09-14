@@ -4,6 +4,10 @@ var router = express.Router();
 var puppetController = require('../controllers/puppetController');
 
 /* GET home page. */
+router.get('/proxytest', puppetController.testProxy);
+
+router.post('/proxyget', puppetController.getProxies);
+
 router.get('/', puppetController.index);
 
 router.post('/links', puppetController.getLinks);
@@ -11,8 +15,6 @@ router.post('/links', puppetController.getLinks);
 router.post('/mails', puppetController.getMails);
 
 router.post('/save', puppetController.saveMails);
-
-router.post('/proxytest', puppetController.testProxy);
 
 router.get('/consult', puppetController.consultBin);
 

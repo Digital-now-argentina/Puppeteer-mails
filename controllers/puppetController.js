@@ -324,44 +324,17 @@ const puppetController = {
         })
     },
     testProxy: async function (req, res, next) {
-        let countryNames = ['Argentina', 'Australia', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Costa Rica', 'Ecuador', 'El Salvador', 'Spain', 'United States', 'Philippines', 'Guatemala', 'Honduras', 'India', 'United Kingdom', 'Mexico', 'Nicaragua', 'Panama', 'Paraguay', 'Peru', 'Dominican Republic', 'South Africa', 'Ukraine', 'Uruguay', 'Venezuela'];
-        let countryCodes = ['ar', 'au', 'bo', 'br', 'cl', 'co', 'cr', 'ec', 'sv', 'es', 'us', 'ph', 'gt', 'hn', 'in', 'uk', 'mx', 'ni', 'pa', 'py', 'pe', 'do', 'za', 'ua', 'uy', 've'];
-        console.log(countryCodes[countryNames.indexOf(req.body.countryTarget)]);
-        var proxyList = [];
         try {
+            let countryNames = ['Argentina', 'Australia', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Costa Rica', 'Ecuador', 'El Salvador', 'Spain', 'United States', 'Philippines', 'Guatemala', 'Honduras', 'India', 'United Kingdom', 'Mexico', 'Nicaragua', 'Panama', 'Paraguay', 'Peru', 'Dominican Republic', 'South Africa', 'Ukraine', 'Uruguay', 'Venezuela'];
+            let countryCodes = ['ar', 'au', 'bo', 'br', 'cl', 'co', 'cr', 'ec', 'sv', 'es', 'us', 'ph', 'gt', 'hn', 'in', 'uk', 'mx', 'ni', 'pa', 'py', 'pe', 'do', 'za', 'ua', 'uy', 've'];
 
-            // var options = {
-            //     countries: [countryCodes[countryNames.indexOf(req.body.countryTarget)]]
-            // };
-
-            // // `gettingProxies` is an event emitter object.
-            // var gettingProxies = ProxyLists.getProxies(options);
-
-            // gettingProxies.on('data', function(proxies) {
-            //     proxies.forEach(proxy => {
-            //         proxyList.push(proxy)
-            //     })
-            //     console.log(proxies)
-            // });
-
-            // gettingProxies.on('error', function(error) {
-            //     // Some error has occurred.
-            //     // console.error(error);
-            // });
-
-            // gettingProxies.once('end', function() {
-            //     console.log('TERMINO DE OBTENER PROXYS DE ' + req.body.countryTarget);
-            //     proxyList.forEach(proxy => {
-            //         console.log(`${proxy.ipAddress}:${proxy.port}`)
-            //     })
-            // });
-
+            var proxyList = [];
 
             console.log('Testing proxy setup....');
             const browser = await puppeteer.launch({
                 headless: false,
                 args: [
-                    // '--proxy-server=182.52.83.36:8080',
+                    // '--proxy-server=socks4://200.116.226.210:57089',
                     '--no-sandbox',
                     // '--headless',
                     '--disable-gpu',
@@ -369,19 +342,89 @@ const puppetController = {
                 ]
             });
             const page = await browser.newPage();
-            // await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
             await page.setDefaultNavigationTimeout(80000);
-            await page.goto(`http://api.scraperapi.com/?api_key=b0090e5f12135e1823a0fba4f12078f9&url=https://whatsmyip.com&country_code=${countryCodes[countryNames.indexOf(req.body.countryTarget)]}`);
-            
+
+            // await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
+
+            // await page.goto(`http://api.scraperapi.com/?api_key=b0090e5f12135e1823a0fba4f12078f9&country_code=${countryCodes[5]}&url=https://whatsmyip.com`);
+
+            await page.goto('https://www.ipaddress.my');
 
             await page.screenshot({
-                path: './screenshots/testProxy.jpg'
+                path: './screenshots/testIpProxy.jpg'
             });
+
+            const page2 = await browser.newPage();
+            await page2.setDefaultNavigationTimeout(80000);
+            // await page2.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
+            
+            // await page2.goto(`http://api.scraperapi.com/?api_key=b0090e5f12135e1823a0fba4f12078f9&country_code=${countryCodes[5]}&url=https://www.google.com/search?adtest=off&hl=es&q=comprar+auto`);
+            
+            await page2.goto('http://www.google.com');
+
+            await page2.screenshot({
+                path: './screenshots/testGoogleProxy.jpg'
+            });
+
             await browser.close();
+
 
         } catch (error) {
             console.log(error)
         }
+
+    },
+    getProxies: async function (req, res, next) {
+        let countryNames = ['Argentina', 'Australia', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Costa Rica', 'Ecuador', 'El Salvador', 'Spain', 'United States', 'Philippines', 'Guatemala', 'Honduras', 'India', 'United Kingdom', 'Mexico', 'Nicaragua', 'Panama', 'Paraguay', 'Peru', 'Dominican Republic', 'South Africa', 'Ukraine', 'Uruguay', 'Venezuela'];
+        let countryCodes = ['ar', 'au', 'bo', 'br', 'cl', 'co', 'cr', 'ec', 'sv', 'es', 'us', 'ph', 'gt', 'hn', 'in', 'uk', 'mx', 'ni', 'pa', 'py', 'pe', 'do', 'za', 'ua', 'uy', 've'];
+
+        var proxyList = [];
+        try {
+
+            var options = {
+                countries: [countryCodes[countryNames.indexOf(req.body.countryTarget)]]
+            };
+
+            // `gettingProxies` is an event emitter object.
+            var gettingProxies = ProxyLists.getProxies(options);
+            console.log(`Buscando proxies de ${req.body.countryTarget} => ${countryCodes[countryNames.indexOf(req.body.countryTarget)]}`);
+
+            gettingProxies.on('data', function (proxies) {
+                console.log(`+ Consiguio ${proxies.length} proxies de ${req.body.countryTarget}`);
+
+                proxies.forEach((proxy, index) => {
+
+                    if (!proxyList.includes(proxy)) {
+                        proxyList.push(proxy)
+                    }
+                })
+
+            });
+
+            gettingProxies.on('error', function (error) {
+                // Some error has occurred.
+                // console.error(error);
+            });
+
+            gettingProxies.once('end', function () {
+                console.log(`Terminó de obtener ${proxyList.length} del país: ${req.body.countryTarget}`);
+
+                proxyList.forEach(proxy => {
+                    console.log(`${proxy.ipAddress}:${proxy.port}`);
+                })
+
+                console.log(`Consiguió ${proxyList.length} proxies de ${req.body.countryTarget}`)
+                example();
+
+            });
+
+            function example() {
+                console.log('Acá seguiria la validación de proxies automatica');
+            }
+        } catch (error) {
+            console.log(error)
+        }
+
 
     }
 }
