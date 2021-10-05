@@ -4,7 +4,7 @@ var router = express.Router();
 var puppetController = require('../controllers/puppetController');
 
 /* GET home page. */
-router.get('/proxytest', puppetController.testProxy);
+router.get('/vpntest', puppetController.testVpn);
 
 router.post('/proxyget', puppetController.getProxies);
 

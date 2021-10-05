@@ -323,18 +323,18 @@ const puppetController = {
             jsonbin: contentJSONBin.record.mails
         })
     },
-    testProxy: async function (req, res, next) {
+    testVpn: async function (req, res, next) {
         try {
             let countryNames = ['Argentina', 'Australia', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Costa Rica', 'Ecuador', 'El Salvador', 'Spain', 'United States', 'Philippines', 'Guatemala', 'Honduras', 'India', 'United Kingdom', 'Mexico', 'Nicaragua', 'Panama', 'Paraguay', 'Peru', 'Dominican Republic', 'South Africa', 'Ukraine', 'Uruguay', 'Venezuela'];
             let countryCodes = ['ar', 'au', 'bo', 'br', 'cl', 'co', 'cr', 'ec', 'sv', 'es', 'us', 'ph', 'gt', 'hn', 'in', 'uk', 'mx', 'ni', 'pa', 'py', 'pe', 'do', 'za', 'ua', 'uy', 've'];
 
             var proxyList = [];
 
-            console.log('Testing proxy setup....');
+            console.log('Testing VPN setup....');
             const browser = await puppeteer.launch({
                 headless: false,
                 args: [
-                    // '--proxy-server=socks4://200.116.226.210:57089',
+                    // '--proxy-server=socks4://191.98.194.97:4145',
                     '--no-sandbox',
                     // '--headless',
                     '--disable-gpu',
@@ -346,24 +346,20 @@ const puppetController = {
 
             // await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
 
-            // await page.goto(`http://api.scraperapi.com/?api_key=b0090e5f12135e1823a0fba4f12078f9&country_code=${countryCodes[5]}&url=https://whatsmyip.com`);
-
             await page.goto('https://www.ipaddress.my');
 
             await page.screenshot({
-                path: './screenshots/testIpProxy.jpg'
+                path: './screenshots/testIpVpn.jpg'
             });
 
             const page2 = await browser.newPage();
+
             await page2.setDefaultNavigationTimeout(80000);
-            // await page2.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
-            
-            // await page2.goto(`http://api.scraperapi.com/?api_key=b0090e5f12135e1823a0fba4f12078f9&country_code=${countryCodes[5]}&url=https://www.google.com/search?adtest=off&hl=es&q=comprar+auto`);
-            
+           
             await page2.goto('http://www.google.com');
 
             await page2.screenshot({
-                path: './screenshots/testGoogleProxy.jpg'
+                path: './screenshots/testGoogleVpn.jpg'
             });
 
             await browser.close();
@@ -373,6 +369,7 @@ const puppetController = {
             console.log(error)
         }
 
+        res.redirect('/');
     },
     getProxies: async function (req, res, next) {
         let countryNames = ['Argentina', 'Australia', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Costa Rica', 'Ecuador', 'El Salvador', 'Spain', 'United States', 'Philippines', 'Guatemala', 'Honduras', 'India', 'United Kingdom', 'Mexico', 'Nicaragua', 'Panama', 'Paraguay', 'Peru', 'Dominican Republic', 'South Africa', 'Ukraine', 'Uruguay', 'Venezuela'];
@@ -380,6 +377,21 @@ const puppetController = {
 
         var proxyList = [];
         try {
+            // // CODIGO PROXY ORBIT
+            // var rawResponse;
+            // async function getProxyOrbit() {
+            //     rawResponse = await fetch(`https://api.proxyorbit.com/v1/?token=J-JRznvqUrnhoorBi4U5cPOInfs7xJgwiKtYXo9kJ24&location=${countryCodes[countryNames.indexOf(req.body.countryTarget)]}&google=true&lastChecked=60`, {
+            //         method: 'GET'
+            //     });
+            //     return rawResponse.json();
+            // };
+            // console.log('Pidiendo proxy orbit');
+            // var proxyOrbit = await getProxyOrbit();
+
+            // console.log(proxyOrbit)
+            
+
+            // END PROXY ORBIT
 
             var options = {
                 countries: [countryCodes[countryNames.indexOf(req.body.countryTarget)]]
