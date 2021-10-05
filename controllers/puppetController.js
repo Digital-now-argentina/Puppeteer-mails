@@ -5,7 +5,7 @@ var innertext = require('innertext');
 var fs = require('fs');
 
 async function puppetGetLinks(content) {
-
+    
     const browser = await puppeteer.launch({
         slowMo: 25,
         defaultViewport: {
