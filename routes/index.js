@@ -6,8 +6,6 @@ var puppetController = require('../controllers/puppetController');
 /* GET home page. */
 router.get('/vpntest', puppetController.testVpn);
 
-router.post('/proxyget', puppetController.getProxies);
-
 router.get('/', puppetController.index);
 
 router.post('/links', puppetController.getLinks);

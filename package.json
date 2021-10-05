@@ -15,7 +15,6 @@
     "innertext": "^1.0.3",
     "morgan": "~1.9.1",
     "nodemon": "^2.0.12",
-    "proxy-lists": "^1.23.3",
     "puppeteer": "^10.2.0",
     "valid.js": "^1.2.5"
   }
