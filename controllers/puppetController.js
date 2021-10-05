@@ -5,8 +5,14 @@ var innertext = require('innertext');
 var fs = require('fs');
 
 async function puppetGetLinks(content) {
-    
+
+    var searchQueriesArray = content.search.replace(/\r\n/g,"\n").split("\n");
+
+    console.log('Los terminos a buscar son:')
+    console.table(searchQueriesArray);
+
     const browser = await puppeteer.launch({
+        headless: false,
         slowMo: 25,
         defaultViewport: {
             width: 1920,
@@ -15,7 +21,7 @@ async function puppetGetLinks(content) {
     });
     const page = await browser.newPage();
     await page.goto('http://isearchfrom.com');
-    await page.type('#searchinput', `${content.search}`);
+    await page.type('#searchinput', `${searchQueriesArray[0]}`);
     await page.type('#countrytags', `${content.countryTarget}`);
     if (content.countryTarget == "Australia" || content.countryTarget == "United States" || content.countryTarget == "United Kingdom" || content.countryTarget == "South Africa" || content.countryTarget == "Ukraine" || content.countryTarget == "India") {
         var language = "English"
@@ -30,7 +36,7 @@ async function puppetGetLinks(content) {
         clickCount: 1
     });
     const newPagePromise = new Promise(x => browser.once('targetcreated', target => x(target.page())));
-    console.log(`Realizando busqueda en isearchfrom.com de "${content.search}", en lenguaje ${language}, en el país: ${content.countryTarget}`);
+    console.log(`Realizando busqueda en isearchfrom.com de "${searchQueriesArray[0]}", en lenguaje ${language}, en el país: ${content.countryTarget}`);
     await page.click("#searchbutton");
     const page2 = await newPagePromise;
     await page2.setDefaultNavigationTimeout(60000);
@@ -40,25 +46,25 @@ async function puppetGetLinks(content) {
         path: './screenshots/captchaPresentOrNot.jpg'
     });
 
-    // var isCaptchaPresent = false;
-    // var pageCaptcha = await page2.evaluate(() => {
-    //     var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
-    //     console.log(captcha);
-    //     if (captcha) {
-    //         console.log('HAY CAPTCHA!!!');
-    //         isCaptchaPresent = true;
-    //         return true;
-    //     } else {
-    //         console.log('NO HAY CAPTCHA!!!');
-    //         isCaptchaPresent = false;
-    //         return false;
-    //     }
-    // });
+    var isCaptchaPresent = false;
+    var pageCaptcha = await page2.evaluate(() => {
+        var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
+        console.log(captcha);
+        if (captcha) {
+            console.log('HAY CAPTCHA!!!');
+            isCaptchaPresent = true;
+            return true;
+        } else {
+            console.log('NO HAY CAPTCHA!!!');
+            isCaptchaPresent = false;
+            return false;
+        }
+    });
 
-    // if (isCaptchaPresent) {
-    //     console.log('CLICK EN CAPTCHA!!!');
-    //     await page2.click(".recaptcha-checkbox-border");
-    // }
+    if (isCaptchaPresent) {
+        console.log('CLICK EN CAPTCHA!!!');
+        await page2.click(".recaptcha-checkbox-border");
+    }
 
     var limitPagination = parseInt(content.limitPage) + 1;
     var totalAnnouncesLinks = [];
@@ -81,7 +87,7 @@ async function puppetGetLinks(content) {
             return links;
         });
         console.log(`Anuncios en página ${i}:`);
-        console.log(pageAnnouncesLinks);
+        console.table(pageAnnouncesLinks);
 
         pageAnnouncesLinks.forEach(announceLink => {
             if (!totalAnnouncesLinks.includes(announceLink)) {
@@ -92,7 +98,8 @@ async function puppetGetLinks(content) {
         await page2.click("#pnnext");
     }
 
-    console.log(`(${totalAnnouncesLinks.length}) Links totales encontrados con anuncios: ${totalAnnouncesLinks}`);
+    console.log(`(${totalAnnouncesLinks.length}) Links totales encontrados con anuncios:`);
+    console.table(totalAnnouncesLinks);
 
     await browser.close();
     return Promise.resolve(totalAnnouncesLinks);
@@ -152,7 +159,8 @@ async function puppetGetMails(array) {
         if (err) return console.log(err);
     });
 
-    console.log(`(${finalMailsArray.length}) Listado de mails encontrados en esas urls: ${finalMailsArray}`);
+    console.log(`(${finalMailsArray.length}) Listado de mails encontrados en esas urls:`);
+    console.table(finalMailsArray);
 
 
     return Promise.resolve(arrayResultsJS);
