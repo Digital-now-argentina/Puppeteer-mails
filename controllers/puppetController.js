@@ -11,98 +11,113 @@ async function puppetGetLinks(content) {
     console.log('Los terminos a buscar son:')
     console.table(searchQueriesArray);
 
-    const browser = await puppeteer.launch({
-        headless: false,
-        slowMo: 25,
-        defaultViewport: {
-            width: 1920,
-            height: 1080
-        }
-    });
-    const page = await browser.newPage();
-    await page.goto('http://isearchfrom.com');
-    await page.type('#searchinput', `${searchQueriesArray[0]}`);
-    await page.type('#countrytags', `${content.countryTarget}`);
-    if (content.countryTarget == "Australia" || content.countryTarget == "United States" || content.countryTarget == "United Kingdom" || content.countryTarget == "South Africa" || content.countryTarget == "Ukraine" || content.countryTarget == "India") {
-        var language = "English"
-    } else {
-        var language = "Spanish"
-    }
-    await page.type('#languagetags', language);
-    await page.click("#countryonly", {
-        clickCount: 1
-    });
-    await page.click("#languageonly", {
-        clickCount: 1
-    });
-    const newPagePromise = new Promise(x => browser.once('targetcreated', target => x(target.page())));
-    console.log(`Realizando busqueda en isearchfrom.com de "${searchQueriesArray[0]}", en lenguaje ${language}, en el país: ${content.countryTarget}`);
-    await page.click("#searchbutton");
-    const page2 = await newPagePromise;
-    await page2.setDefaultNavigationTimeout(60000);
-    await page2.bringToFront();
+    var allUrlsFound = [];
 
-    await page2.screenshot({
-        path: './screenshots/captchaPresentOrNot.jpg'
-    });
-
-    var isCaptchaPresent = false;
-    var pageCaptcha = await page2.evaluate(() => {
-        var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
-        console.log(captcha);
-        if (captcha) {
-            console.log('HAY CAPTCHA!!!');
-            isCaptchaPresent = true;
-            return true;
+    async function puppetGetQueryLinks(query) {
+    
+        const browser = await puppeteer.launch({
+            headless: false,
+            slowMo: 25,
+            defaultViewport: {
+                width: 1920,
+                height: 1080
+            }
+        });
+        const page = await browser.newPage();
+        await page.goto('http://isearchfrom.com');
+        await page.type('#searchinput', `${query}`);
+        await page.type('#countrytags', `${content.countryTarget}`);
+        if (content.countryTarget == "Australia" || content.countryTarget == "United States" || content.countryTarget == "United Kingdom" || content.countryTarget == "South Africa" || content.countryTarget == "Ukraine" || content.countryTarget == "India") {
+            var language = "English"
         } else {
-            console.log('NO HAY CAPTCHA!!!');
-            isCaptchaPresent = false;
-            return false;
+            var language = "Spanish"
         }
-    });
-
-    if (isCaptchaPresent) {
-        console.log('CLICK EN CAPTCHA!!!');
-        await page2.click(".recaptcha-checkbox-border");
-    }
-
-    var limitPagination = parseInt(content.limitPage) + 1;
-    var totalAnnouncesLinks = [];
-    for (let i = 1; i < limitPagination; i++) {
-        await page2.waitForNavigation({
-            waitUntil: 'networkidle0',
+        await page.type('#languagetags', language);
+        await page.click("#countryonly", {
+            clickCount: 1
         });
+        await page.click("#languageonly", {
+            clickCount: 1
+        });
+        const newPagePromise = new Promise(x => browser.once('targetcreated', target => x(target.page())));
+        console.log(`Realizando busqueda en isearchfrom.com de "${query}", en lenguaje ${language}, en el país: ${content.countryTarget}`);
+        await page.click("#searchbutton");
+        const page2 = await newPagePromise;
+        await page2.setDefaultNavigationTimeout(60000);
+        await page2.bringToFront();
+
         await page2.screenshot({
-            path: `./screenshots/lastrun--page${i}.jpg`,
-            fullPage: true
+            path: './screenshots/captchaPresentOrNot.jpg'
         });
-        var pageAnnouncesLinks = await page2.evaluate(() => {
-            var anuncios = document.querySelectorAll('.jpu5Q.NVWord.VqFMTc.p8AiDd');
-            var links = [];
-            if (anuncios.length >= 1) {
-                anuncios.forEach(anuncio => {
-                    links.push(anuncio.parentElement.childNodes[1].innerHTML);
-                });
-            }
-            return links;
-        });
-        console.log(`Anuncios en página ${i}:`);
-        console.table(pageAnnouncesLinks);
 
-        pageAnnouncesLinks.forEach(announceLink => {
-            if (!totalAnnouncesLinks.includes(announceLink)) {
-                totalAnnouncesLinks.push(announceLink)
+        var isCaptchaPresent = false;
+        var pageCaptcha = await page2.evaluate(() => {
+            var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
+            console.log(captcha);
+            if (captcha) {
+                console.log('HAY CAPTCHA!!!');
+                isCaptchaPresent = true;
+                return true;
+            } else {
+                console.log('NO HAY CAPTCHA!!!');
+                isCaptchaPresent = false;
+                return false;
             }
-
         });
-        await page2.click("#pnnext");
+
+        if (isCaptchaPresent) {
+            console.log('CLICK EN CAPTCHA!!!');
+            await page2.click(".recaptcha-checkbox-border");
+        }
+
+        var limitPagination = parseInt(content.limitPage) + 1;
+        var totalAnnouncesLinks = [];
+        for (let i = 1; i < limitPagination; i++) {
+            await page2.waitForNavigation({
+                waitUntil: 'networkidle2',
+            });
+            await page2.screenshot({
+                path: `./screenshots/lastrun--page${i}.jpg`,
+                fullPage: true
+            });
+            var pageAnnouncesLinks = await page2.evaluate(() => {
+                var anuncios = document.querySelectorAll('.jpu5Q.NVWord.VqFMTc.p8AiDd');
+                var links = [];
+                if (anuncios.length >= 1) {
+                    anuncios.forEach(anuncio => {
+                        links.push(anuncio.parentElement.childNodes[1].innerHTML);
+                    });
+                }
+                return links;
+            });
+            console.log(`Anuncios en página ${i}:`);
+            console.table(pageAnnouncesLinks);
+
+            pageAnnouncesLinks.forEach(announceLink => {
+                if (!totalAnnouncesLinks.includes(announceLink)) {
+                    totalAnnouncesLinks.push(announceLink)
+                }
+                if (!allUrlsFound.includes(announceLink)) {
+                    allUrlsFound.push(announceLink)
+                }
+
+            });
+            await page2.click("#pnnext");
+        }
+
+        console.log(`(${totalAnnouncesLinks.length}) Links totales encontrados con anuncios:`);
+        console.table(totalAnnouncesLinks);
+
+        await browser.close();
     }
 
-    console.log(`(${totalAnnouncesLinks.length}) Links totales encontrados con anuncios:`);
-    console.table(totalAnnouncesLinks);
+    for await (let query of searchQueriesArray) {
+        const totalAnnouncesLinks = await puppetGetQueryLinks(query);
+    }
 
-    await browser.close();
-    return Promise.resolve(totalAnnouncesLinks);
+    console.log('LLEGO AL FINAL')
+    console.table(allUrlsFound)
+    return Promise.resolve(allUrlsFound);
 }
 
 async function puppetGetMails(array) {
@@ -238,7 +253,7 @@ const puppetController = {
             };
             var contentJSONBin = await getJSONBin();
 
-            console.log(contentJSONBin.record)
+            // console.log(contentJSONBin.record)
 
             var notRepeatedMails = [];
             for (let i = 0; i < newMailsSelected.length; i++) {
@@ -247,7 +262,7 @@ const puppetController = {
                 }
             }
             console.log('Los mails no repetidos a agregar sería:');
-            console.log(notRepeatedMails);
+            console.table(notRepeatedMails);
 
             if (notRepeatedMails.length > 0) {
                 //Saving new results
@@ -255,7 +270,8 @@ const puppetController = {
                     var updatedMails = [...notRepeatedMails, ...contentJSONBin.record.mails];
                     var readyUpdatedMails = updatedMails.sort((a, b) => (a.mail > b.mail) ? 1 : -1);
                     console.log('Por actualizar! Así quedaria el listado en JSONBin:');
-                    console.log(readyUpdatedMails);
+                    console.table(readyUpdatedMails);
+
                     var saveRawResponse;
 
                     const jsonToSave = JSON.stringify({
@@ -281,7 +297,11 @@ const puppetController = {
 
                     var responsePostText = await responsePost.text();
 
-                    console.log(responsePostText);
+                    // console.log(responsePostText);
+
+                    if (responsePost.status == 200) {
+                        console.log('Guardó correctamente en JSON Bin los resultados')
+                    }
 
                 } catch (error) {
                     console.log(error);
