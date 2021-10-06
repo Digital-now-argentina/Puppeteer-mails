@@ -45,7 +45,7 @@ async function puppetGetLinks(content) {
 
         const page2 = await newPagePromise;
 
-        // await page2.waitForNavigation();
+        await page2.waitForNavigation({ waitUntil: ['networkidle2'] });
 
         await page2.bringToFront();
 
