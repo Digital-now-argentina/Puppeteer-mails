@@ -6,15 +6,15 @@ var fs = require('fs');
 
 async function puppetGetLinks(content) {
 
-    var searchQueriesArray = content.search.replace(/\r\n/g,"\n").split("\n");
+    var searchQueriesArray = content.search.replace(/\r\n/g, "\n").split("\n");
 
-    console.log('Los terminos a buscar son:')
+    console.log(`(${searchQueriesArray.length}) Los terminos a buscar son:`);
     console.table(searchQueriesArray);
 
     var allUrlsFound = [];
 
     async function puppetGetQueryLinks(query) {
-    
+
         const browser = await puppeteer.launch({
             headless: false,
             slowMo: 25,
@@ -40,84 +40,97 @@ async function puppetGetLinks(content) {
             clickCount: 1
         });
         const newPagePromise = new Promise(x => browser.once('targetcreated', target => x(target.page())));
-        console.log(`Realizando busqueda en isearchfrom.com de "${query}", en lenguaje ${language}, en el país: ${content.countryTarget}`);
+        console.log(`(${searchQueriesArray.indexOf(query)} / ${searchQueriesArray.length}) Realizando busqueda en isearchfrom.com de "${query}", en lenguaje ${language}, en el país: ${content.countryTarget}`);
         await page.click("#searchbutton");
+
         const page2 = await newPagePromise;
-        await page2.setDefaultNavigationTimeout(60000);
+
+        // await page2.waitForNavigation();
+
         await page2.bringToFront();
+
+        await page2.setDefaultNavigationTimeout(60000);
 
         await page2.screenshot({
             path: './screenshots/captchaPresentOrNot.jpg'
         });
 
-        var isCaptchaPresent = false;
-        var pageCaptcha = await page2.evaluate(() => {
-            var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
-            console.log(captcha);
-            if (captcha) {
-                console.log('HAY CAPTCHA!!!');
-                isCaptchaPresent = true;
-                return true;
-            } else {
-                console.log('NO HAY CAPTCHA!!!');
-                isCaptchaPresent = false;
-                return false;
-            }
-        });
 
-        if (isCaptchaPresent) {
-            console.log('CLICK EN CAPTCHA!!!');
-            await page2.click(".recaptcha-checkbox-border");
-        }
+
+        // var isCaptchaPresent = false;
+        // var pageCaptcha = await page2.evaluate(() => {
+        //     var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
+        //     console.log(captcha);
+        //     if (captcha) {
+        //         console.log('HAY CAPTCHA!!!');
+        //         isCaptchaPresent = true;
+        //         return true;
+        //     } else {
+        //         console.log('NO HAY CAPTCHA!!!');
+        //         isCaptchaPresent = false;
+        //         return false;
+        //     }
+        // });
+
+        // if (isCaptchaPresent) {
+        //     console.log('CLICK EN CAPTCHA!!!');
+        //     await page2.click(".recaptcha-checkbox-border");
+        // }
 
         var limitPagination = parseInt(content.limitPage) + 1;
         var totalAnnouncesLinks = [];
         for (let i = 1; i < limitPagination; i++) {
-            await page2.waitForNavigation({
-                waitUntil: 'networkidle2',
+            await page2.waitForSelector('#pnnext')
+            .then(async () => {
+                await page2.screenshot({
+                    path: `./screenshots/lastrun--page${i}.jpg`,
+                    fullPage: true
+                });
+                var pageAnnouncesLinks = await page2.evaluate(() => {
+                    var anuncios = document.querySelectorAll('.jpu5Q.NVWord.VqFMTc.p8AiDd');
+                    var links = [];
+                    if (anuncios.length >= 1) {
+                        anuncios.forEach(anuncio => {
+                            links.push(anuncio.parentElement.childNodes[1].innerHTML);
+                        });
+                    }
+                    return links;
+                });
+                console.log(`${pageAnnouncesLinks.length} Anuncios en página ${i} / ${content.limitPage} de "${query}":`);
+                console.table(pageAnnouncesLinks);
+    
+                pageAnnouncesLinks.forEach(announceLink => {
+                    if (!totalAnnouncesLinks.includes(announceLink)) {
+                        totalAnnouncesLinks.push(announceLink)
+                    }
+                    if (!allUrlsFound.includes(announceLink)) {
+                        allUrlsFound.push(announceLink)
+                    }
+    
+                });
+                await page2.click("#pnnext");
             });
-            await page2.screenshot({
-                path: `./screenshots/lastrun--page${i}.jpg`,
-                fullPage: true
-            });
-            var pageAnnouncesLinks = await page2.evaluate(() => {
-                var anuncios = document.querySelectorAll('.jpu5Q.NVWord.VqFMTc.p8AiDd');
-                var links = [];
-                if (anuncios.length >= 1) {
-                    anuncios.forEach(anuncio => {
-                        links.push(anuncio.parentElement.childNodes[1].innerHTML);
-                    });
-                }
-                return links;
-            });
-            console.log(`Anuncios en página ${i}:`);
-            console.table(pageAnnouncesLinks);
-
-            pageAnnouncesLinks.forEach(announceLink => {
-                if (!totalAnnouncesLinks.includes(announceLink)) {
-                    totalAnnouncesLinks.push(announceLink)
-                }
-                if (!allUrlsFound.includes(announceLink)) {
-                    allUrlsFound.push(announceLink)
-                }
-
-            });
-            await page2.click("#pnnext");
+            
         }
 
-        console.log(`(${totalAnnouncesLinks.length}) Links totales encontrados con anuncios:`);
+
+        console.log(`(${totalAnnouncesLinks.length}) Links totales encontrados con anuncios para "${query}":`);
         console.table(totalAnnouncesLinks);
 
         await browser.close();
+
+
+
     }
 
     for await (let query of searchQueriesArray) {
         const totalAnnouncesLinks = await puppetGetQueryLinks(query);
     }
 
-    console.log('LLEGO AL FINAL')
+    console.log(`(${searchQueriesArray.length} / ${searchQueriesArray.length}) LLEGO AL FINAL, BUSCO TODO LOS TERMINOS Y ENCONTRO ${allUrlsFound.length} URLS CON ANUNCIOS:`)
     console.table(allUrlsFound)
     return Promise.resolve(allUrlsFound);
+
 }
 
 async function puppetGetMails(array) {
@@ -261,7 +274,7 @@ const puppetController = {
                     notRepeatedMails.push(newMailsSelected[i]);
                 }
             }
-            console.log('Los mails no repetidos a agregar sería:');
+            console.log(`(${notRepeatedMails.length}) Los mails NO repetidos a agregar serían:`);
             console.table(notRepeatedMails);
 
             if (notRepeatedMails.length > 0) {
@@ -269,8 +282,8 @@ const puppetController = {
                 try {
                     var updatedMails = [...notRepeatedMails, ...contentJSONBin.record.mails];
                     var readyUpdatedMails = updatedMails.sort((a, b) => (a.mail > b.mail) ? 1 : -1);
-                    console.log('Por actualizar! Así quedaria el listado en JSONBin:');
-                    console.table(readyUpdatedMails);
+                    console.log(`(${readyUpdatedMails.length}) Por actualizar el listado en JSONBin: ${notRepeatedMails.length} mails nuevos, ${readyUpdatedMails.length - notRepeatedMails.length} mails ya guardados.`);
+                    // console.table(readyUpdatedMails);
 
                     var saveRawResponse;
 
@@ -300,7 +313,7 @@ const puppetController = {
                     // console.log(responsePostText);
 
                     if (responsePost.status == 200) {
-                        console.log('Guardó correctamente en JSON Bin los resultados')
+                        console.log('----Guardó correctamente en JSON Bin los resultados!----')
                     }
 
                 } catch (error) {
@@ -380,7 +393,7 @@ const puppetController = {
             const page2 = await browser.newPage();
 
             await page2.setDefaultNavigationTimeout(80000);
-           
+
             await page2.goto('http://www.google.com');
 
             await page2.screenshot({
