@@ -76,23 +76,5 @@
   </form>
 
 </body>
-<script>
-  var methodSearch = document.querySelector("#search-method");
-  var countryTarget = document.querySelector("#country-target");
-  var countryTargetLabel = document.querySelector("#country-target-label");
-
-  countryTarget.style.display = 'none';
-  countryTargetLabel.style.display = 'none';
-
-  methodSearch.addEventListener('change', () => {
-    if (methodSearch.value == 'google') {
-      countryTarget.style.display = 'none';
-      countryTargetLabel.style.display = 'none';
-    } else {
-      countryTarget.style.display = 'block';
-      countryTargetLabel.style.display = 'block';
-    }
-  })
-</script>
 
 </html>

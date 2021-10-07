@@ -364,12 +364,12 @@ const puppetController = {
             var rawResponse;
             var contentJSONBin;
             async function getJSONBin() {
-                rawResponse = await fetch('https://api.jsonbin.io/v3/b/6138de194a82881d6c4b4de5/latest', {
+                rawResponse = await fetch('https://api.jsonbin.io/v3/b/615f424a4a82881d6c5ccbf8/latest', {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
-                        'X-Master-Key': '$2b$10$Con2dje0wqb0I5A7SCsfcOVYnGg7KZKuLyka00bom1AQTwjWwOPAi'
+                        'X-Master-Key': '$2b$10$HJyBh9kHco7lKMRGVLfDNuO9AJ0YnwXgkQSC/wvKTWZ3YELQ232Me'
                     }
                 });
                 return rawResponse.json();
@@ -403,13 +403,13 @@ const puppetController = {
 
                     async function postJSONBin() {
                         console.log('Guardando data en JSONBin.....');
-                        saveRawResponse = await fetch('https://api.jsonbin.io/v3/b/6138de194a82881d6c4b4de5', {
+                        saveRawResponse = await fetch('https://api.jsonbin.io/v3/b/615f424a4a82881d6c5ccbf8', {
                             method: 'PUT',
                             headers: {
                                 'Accept': 'application/json',
                                 'Content-Type': 'application/json',
                                 'X-Bin-Versioning': 'false',
-                                'X-Master-Key': '$2b$10$Con2dje0wqb0I5A7SCsfcOVYnGg7KZKuLyka00bom1AQTwjWwOPAi'
+                                'X-Master-Key': '$2b$10$HJyBh9kHco7lKMRGVLfDNuO9AJ0YnwXgkQSC/wvKTWZ3YELQ232Me'
                             },
                             body: jsonToSave
                         });
@@ -450,12 +450,12 @@ const puppetController = {
             var rawResponse;
             var contentJSONBin;
             async function getJSONBin() {
-                rawResponse = await fetch('https://api.jsonbin.io/v3/b/6138de194a82881d6c4b4de5/latest', {
+                rawResponse = await fetch('https://api.jsonbin.io/v3/b/615f424a4a82881d6c5ccbf8/latest', {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
-                        'X-Master-Key': '$2b$10$Con2dje0wqb0I5A7SCsfcOVYnGg7KZKuLyka00bom1AQTwjWwOPAi'
+                        'X-Master-Key': '$2b$10$HJyBh9kHco7lKMRGVLfDNuO9AJ0YnwXgkQSC/wvKTWZ3YELQ232Me'
                     }
                 });
                 return rawResponse.json();
