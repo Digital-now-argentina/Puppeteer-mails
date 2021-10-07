@@ -1,5 +1,4 @@
 const puppeteer = require('puppeteer');
-
 var fetch = require('node-fetch');
 var innertext = require('innertext');
 var fs = require('fs');
