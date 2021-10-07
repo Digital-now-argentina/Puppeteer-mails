@@ -24,6 +24,7 @@ async function puppetISearchLinks(content) {
             }
         });
         const page = await browser.newPage();
+        await page.setUserAgent(userAgent.toString());
         await page.goto('http://isearchfrom.com');
         await page.type('#searchinput', `${query}`);
         await page.type('#countrytags', `${content.countryTarget}`);
@@ -78,7 +79,7 @@ async function puppetISearchLinks(content) {
         var limitPagination = parseInt(content.limitPage) + 1;
         var totalAnnouncesLinks = [];
         for (let i = 1; i < limitPagination; i++) {
-            await page2.waitForSelector('#pnnext')
+            await page2.waitForSelector('#pnnext', {timeout: 600000})
             .then(async () => {
                 await page2.screenshot({
                     path: `./screenshots/lastrun--page${i}.jpg`,
@@ -149,15 +150,19 @@ async function puppetGoogleLinks(content) {
             }
         });
         const page = await browser.newPage();
+        
+        await page.setDefaultNavigationTimeout(80000);
+        
         await page.goto('http://www.google.com');
+        await page.waitForSelector('.gNO89b');
+
         await page.type('.gLFyf.gsfi', `${query}`);
 
         console.log(`(${searchQueriesArray.indexOf(query)} / ${searchQueriesArray.length}) Realizando busqueda en Google.com de "${query}"`);
+        
         await page.click('.gNO89b');
 
-        await page.waitForNavigation({ waitUntil: ['networkidle2'] });
-
-        await page.setDefaultNavigationTimeout(60000);
+        
 
         await page.screenshot({
             path: './screenshots/captchaPresentOrNot.jpg'
@@ -186,7 +191,7 @@ async function puppetGoogleLinks(content) {
         var limitPagination = parseInt(content.limitPage) + 1;
         var totalAnnouncesLinks = [];
         for (let i = 1; i < limitPagination; i++) {
-            await page.waitForSelector('#pnnext')
+            await page.waitForSelector('#pnnext', {timeout: 600000})
             .then(async () => {
                 await page.screenshot({
                     path: `./screenshots/lastrun--page${i}.jpg`,
@@ -325,7 +330,7 @@ const puppetController = {
 
         res.render('links', {
             title: 'Tool Mail Scrapping - Links',
-            search: req.body.search,
+            search: req.body.search.replace(/\r\n/g, ", "),
             links: totalAnnouncesLinks,
             country: req.body.countryTarget
         })
