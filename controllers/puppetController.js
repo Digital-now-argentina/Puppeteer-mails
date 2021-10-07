@@ -24,7 +24,9 @@ async function puppetISearchLinks(content) {
             }
         });
         const page = await browser.newPage();
-        await page.setUserAgent(userAgent.toString());
+
+        await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36');
+        
         await page.goto('http://isearchfrom.com');
         await page.type('#searchinput', `${query}`);
         await page.type('#countrytags', `${content.countryTarget}`);
@@ -46,7 +48,9 @@ async function puppetISearchLinks(content) {
 
         const page2 = await newPagePromise;
 
-        await page2.waitForNavigation({ waitUntil: ['networkidle2'] });
+        await page2.waitForNavigation({
+            waitUntil: ['networkidle2']
+        });
 
         await page2.bringToFront();
 
@@ -79,37 +83,39 @@ async function puppetISearchLinks(content) {
         var limitPagination = parseInt(content.limitPage) + 1;
         var totalAnnouncesLinks = [];
         for (let i = 1; i < limitPagination; i++) {
-            await page2.waitForSelector('#pnnext', {timeout: 600000})
-            .then(async () => {
-                await page2.screenshot({
-                    path: `./screenshots/lastrun--page${i}.jpg`,
-                    fullPage: true
+            await page2.waitForSelector('#pnnext', {
+                    timeout: 600000
+                })
+                .then(async () => {
+                    await page2.screenshot({
+                        path: `./screenshots/lastrun--page${i}.jpg`,
+                        fullPage: true
+                    });
+                    var pageAnnouncesLinks = await page2.evaluate(() => {
+                        var anuncios = document.querySelectorAll('.jpu5Q.NVWord.VqFMTc.p8AiDd');
+                        var links = [];
+                        if (anuncios.length >= 1) {
+                            anuncios.forEach(anuncio => {
+                                links.push(anuncio.parentElement.childNodes[1].innerHTML);
+                            });
+                        }
+                        return links;
+                    });
+                    console.log(`${pageAnnouncesLinks.length} Anuncios en página ${i} / ${content.limitPage} de "${query}":`);
+                    console.table(pageAnnouncesLinks);
+
+                    pageAnnouncesLinks.forEach(announceLink => {
+                        if (!totalAnnouncesLinks.includes(announceLink)) {
+                            totalAnnouncesLinks.push(announceLink)
+                        }
+                        if (!allUrlsFound.includes(announceLink)) {
+                            allUrlsFound.push(announceLink)
+                        }
+
+                    });
+                    await page2.click("#pnnext");
                 });
-                var pageAnnouncesLinks = await page2.evaluate(() => {
-                    var anuncios = document.querySelectorAll('.jpu5Q.NVWord.VqFMTc.p8AiDd');
-                    var links = [];
-                    if (anuncios.length >= 1) {
-                        anuncios.forEach(anuncio => {
-                            links.push(anuncio.parentElement.childNodes[1].innerHTML);
-                        });
-                    }
-                    return links;
-                });
-                console.log(`${pageAnnouncesLinks.length} Anuncios en página ${i} / ${content.limitPage} de "${query}":`);
-                console.table(pageAnnouncesLinks);
-    
-                pageAnnouncesLinks.forEach(announceLink => {
-                    if (!totalAnnouncesLinks.includes(announceLink)) {
-                        totalAnnouncesLinks.push(announceLink)
-                    }
-                    if (!allUrlsFound.includes(announceLink)) {
-                        allUrlsFound.push(announceLink)
-                    }
-    
-                });
-                await page2.click("#pnnext");
-            });
-            
+
         }
 
         console.log(`(${totalAnnouncesLinks.length}) Links totales encontrados con anuncios para "${query}":`);
@@ -150,79 +156,64 @@ async function puppetGoogleLinks(content) {
             }
         });
         const page = await browser.newPage();
-        
+
         await page.setDefaultNavigationTimeout(80000);
+
+        // await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36');
         
         await page.goto('http://www.google.com');
+
         await page.waitForSelector('.gNO89b');
+        await page.waitForSelector('.gLFyf.gsfi');
+
+        console.log(`(${searchQueriesArray.indexOf(query)} / ${searchQueriesArray.length}) Realizando busqueda en Google.com de "${query}"`);
 
         await page.type('.gLFyf.gsfi', `${query}`);
 
-        console.log(`(${searchQueriesArray.indexOf(query)} / ${searchQueriesArray.length}) Realizando busqueda en Google.com de "${query}"`);
-        
-        await page.click('.gNO89b');
 
-        
+        await page.click('.gNO89b');
 
         await page.screenshot({
             path: './screenshots/captchaPresentOrNot.jpg'
         });
 
-        // var isCaptchaPresent = false;
-        // var pageCaptcha = await page.evaluate(() => {
-        //     var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
-        //     console.log(captcha);
-        //     if (captcha) {
-        //         console.log('HAY CAPTCHA!!!');
-        //         isCaptchaPresent = true;
-        //         return true;
-        //     } else {
-        //         console.log('NO HAY CAPTCHA!!!');
-        //         isCaptchaPresent = false;
-        //         return false;
-        //     }
-        // });
-
-        // if (isCaptchaPresent) {
-        //     console.log('CLICK EN CAPTCHA!!!');
-        //     await page.click(".recaptcha-checkbox-border");
-        // }
-
         var limitPagination = parseInt(content.limitPage) + 1;
         var totalAnnouncesLinks = [];
         for (let i = 1; i < limitPagination; i++) {
-            await page.waitForSelector('#pnnext', {timeout: 600000})
-            .then(async () => {
-                await page.screenshot({
-                    path: `./screenshots/lastrun--page${i}.jpg`,
-                    fullPage: true
+            await page.waitForSelector('#pnnext', {
+                    timeout: 600000
+                })
+                .then(async () => {
+                    await page.screenshot({
+                        path: `./screenshots/lastrun--page${i}.jpg`,
+                        fullPage: true
+                    });
+                    var pageAnnouncesLinks = await page.evaluate(() => {
+                        var anuncios = document.querySelectorAll('.jpu5Q.NVWord.VqFMTc.p8AiDd');
+                        var links = [];
+                        if (anuncios.length >= 1) {
+                            anuncios.forEach(anuncio => {
+                                var arrayLink = anuncio.parentElement.childNodes[1].innerHTML.split('/');
+                                links.push(`${arrayLink[0]}//${arrayLink[2]}/`);
+                            });
+                        }
+                        return links;
+                    });
+                    console.log(`${pageAnnouncesLinks.length} Anuncios en página ${i} / ${content.limitPage} de "${query}":`);
+                    console.table(pageAnnouncesLinks);
+
+                    pageAnnouncesLinks.forEach(announceLink => {
+                        if (!totalAnnouncesLinks.includes(announceLink)) {
+                            totalAnnouncesLinks.push(announceLink)
+                        }
+                        if (!allUrlsFound.includes(announceLink)) {
+                            allUrlsFound.push(announceLink)
+                        }
+
+                    });
+                    await page.click("#pnnext");
                 });
-                var pageAnnouncesLinks = await page.evaluate(() => {
-                    var anuncios = document.querySelectorAll('.jpu5Q.NVWord.VqFMTc.p8AiDd');
-                    var links = [];
-                    if (anuncios.length >= 1) {
-                        anuncios.forEach(anuncio => {
-                            var arrayLink = anuncio.parentElement.childNodes[1].innerHTML.split('/');
-                            links.push(`${arrayLink[0]}//${arrayLink[2]}/`);
-                        });
-                    }
-                    return links;
-                });
-                console.log(`${pageAnnouncesLinks.length} Anuncios en página ${i} / ${content.limitPage} de "${query}":`);
-                console.table(pageAnnouncesLinks);
-    
-                pageAnnouncesLinks.forEach(announceLink => {
-                    if (!totalAnnouncesLinks.includes(announceLink)) {
-                        totalAnnouncesLinks.push(announceLink)
-                    }
-                    if (!allUrlsFound.includes(announceLink)) {
-                        allUrlsFound.push(announceLink)
-                    }
-    
-                });
-                await page.click("#pnnext");
-            });
-            
+
         }
 
         console.log(`(${totalAnnouncesLinks.length}) Links totales encontrados con anuncios para "${query}":`);
@@ -326,7 +317,7 @@ const puppetController = {
                 console.log(error)
             }
         }
-        
+
 
         res.render('links', {
             title: 'Tool Mail Scrapping - Links',
