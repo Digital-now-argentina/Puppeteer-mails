@@ -3,7 +3,8 @@ var fetch = require('node-fetch');
 var innertext = require('innertext');
 var fs = require('fs');
 
-async function puppetGetLinks(content) {
+/*---Funcion encargada de buscar en ISearchFrom.com---*/
+async function puppetISearchLinks(content) {
 
     var searchQueriesArray = content.search.replace(/\r\n/g, "\n").split("\n");
 
@@ -12,7 +13,7 @@ async function puppetGetLinks(content) {
 
     var allUrlsFound = [];
 
-    async function puppetGetQueryLinks(query) {
+    async function puppetISearchGetQueryLinks(query) {
 
         const browser = await puppeteer.launch({
             headless: false,
@@ -53,8 +54,6 @@ async function puppetGetLinks(content) {
         await page2.screenshot({
             path: './screenshots/captchaPresentOrNot.jpg'
         });
-
-
 
         // var isCaptchaPresent = false;
         // var pageCaptcha = await page2.evaluate(() => {
@@ -112,18 +111,15 @@ async function puppetGetLinks(content) {
             
         }
 
-
         console.log(`(${totalAnnouncesLinks.length}) Links totales encontrados con anuncios para "${query}":`);
         console.table(totalAnnouncesLinks);
 
         await browser.close();
 
-
-
     }
 
     for await (let query of searchQueriesArray) {
-        const totalAnnouncesLinks = await puppetGetQueryLinks(query);
+        const totalAnnouncesLinks = await puppetISearchGetQueryLinks(query);
     }
 
     console.log(`(${searchQueriesArray.length} / ${searchQueriesArray.length}) LLEGO AL FINAL, BUSCO TODO LOS TERMINOS Y ENCONTRO ${allUrlsFound.length} URLS CON ANUNCIOS:`)
@@ -132,6 +128,116 @@ async function puppetGetLinks(content) {
 
 }
 
+/*---Funcion encargada de buscar directamente en Google---*/
+async function puppetGoogleLinks(content) {
+
+    var searchQueriesArray = content.search.replace(/\r\n/g, "\n").split("\n");
+
+    console.log(`(${searchQueriesArray.length}) Los terminos a buscar son:`);
+    console.table(searchQueriesArray);
+
+    var allUrlsFound = [];
+
+    async function puppetGoogleGetQueryLinks(query) {
+
+        const browser = await puppeteer.launch({
+            headless: false,
+            slowMo: 25,
+            defaultViewport: {
+                width: 1920,
+                height: 1080
+            }
+        });
+        const page = await browser.newPage();
+        await page.goto('http://www.google.com');
+        await page.type('.gLFyf.gsfi', `${query}`);
+
+        console.log(`(${searchQueriesArray.indexOf(query)} / ${searchQueriesArray.length}) Realizando busqueda en Google.com de "${query}"`);
+        await page.click('.gNO89b');
+
+        await page.waitForNavigation({ waitUntil: ['networkidle2'] });
+
+        await page.setDefaultNavigationTimeout(60000);
+
+        await page.screenshot({
+            path: './screenshots/captchaPresentOrNot.jpg'
+        });
+
+        // var isCaptchaPresent = false;
+        // var pageCaptcha = await page.evaluate(() => {
+        //     var captcha = document.querySelectorAll('.recaptcha-checkbox-border');
+        //     console.log(captcha);
+        //     if (captcha) {
+        //         console.log('HAY CAPTCHA!!!');
+        //         isCaptchaPresent = true;
+        //         return true;
+        //     } else {
+        //         console.log('NO HAY CAPTCHA!!!');
+        //         isCaptchaPresent = false;
+        //         return false;
+        //     }
+        // });
+
+        // if (isCaptchaPresent) {
+        //     console.log('CLICK EN CAPTCHA!!!');
+        //     await page.click(".recaptcha-checkbox-border");
+        // }
+
+        var limitPagination = parseInt(content.limitPage) + 1;
+        var totalAnnouncesLinks = [];
+        for (let i = 1; i < limitPagination; i++) {
+            await page.waitForSelector('#pnnext')
+            .then(async () => {
+                await page.screenshot({
+                    path: `./screenshots/lastrun--page${i}.jpg`,
+                    fullPage: true
+                });
+                var pageAnnouncesLinks = await page.evaluate(() => {
+                    var anuncios = document.querySelectorAll('.jpu5Q.NVWord.VqFMTc.p8AiDd');
+                    var links = [];
+                    if (anuncios.length >= 1) {
+                        anuncios.forEach(anuncio => {
+                            var arrayLink = anuncio.parentElement.childNodes[1].innerHTML.split('/');
+                            links.push(`${arrayLink[0]}//${arrayLink[2]}/`);
+                        });
+                    }
+                    return links;
+                });
+                console.log(`${pageAnnouncesLinks.length} Anuncios en página ${i} / ${content.limitPage} de "${query}":`);
+                console.table(pageAnnouncesLinks);
+    
+                pageAnnouncesLinks.forEach(announceLink => {
+                    if (!totalAnnouncesLinks.includes(announceLink)) {
+                        totalAnnouncesLinks.push(announceLink)
+                    }
+                    if (!allUrlsFound.includes(announceLink)) {
+                        allUrlsFound.push(announceLink)
+                    }
+    
+                });
+                await page.click("#pnnext");
+            });
+            
+        }
+
+        console.log(`(${totalAnnouncesLinks.length}) Links totales encontrados con anuncios para "${query}":`);
+        console.table(totalAnnouncesLinks);
+
+        await browser.close();
+
+    }
+
+    for await (let query of searchQueriesArray) {
+        const totalAnnouncesLinks = await puppetGoogleGetQueryLinks(query);
+    }
+
+    console.log(`(${searchQueriesArray.length} / ${searchQueriesArray.length}) LLEGO AL FINAL, BUSCO TODO LOS TERMINOS Y ENCONTRO ${allUrlsFound.length} URLS CON ANUNCIOS:`)
+    console.table(allUrlsFound)
+    return Promise.resolve(allUrlsFound);
+
+}
+
+/*---Funcion encargada de conseguir los mails de las urls con anuncios obtenidas---*/
 async function puppetGetMails(array) {
 
     var foundMailsArray = [];
@@ -202,11 +308,20 @@ const puppetController = {
     getLinks: async function (req, res, next) {
         let totalAnnouncesLinks;
 
-        try {
-            totalAnnouncesLinks = await puppetGetLinks(req.body);
-        } catch (error) {
-            console.log(error)
+        if (req.body.searchMethod == 'google') {
+            try {
+                totalAnnouncesLinks = await puppetGoogleLinks(req.body);
+            } catch (error) {
+                console.log(error)
+            }
+        } else {
+            try {
+                totalAnnouncesLinks = await puppetISearchLinks(req.body);
+            } catch (error) {
+                console.log(error)
+            }
         }
+        
 
         res.render('links', {
             title: 'Tool Mail Scrapping - Links',
